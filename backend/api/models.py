@@ -68,6 +68,7 @@ class TransferLog(models.Model):
 
 class RepairStatus(models.Model):
     name = models.CharField(max_length=50, unique=True)
+    product_status = models.ForeignKey(Status, on_delete=models.SET_NULL, null=True, blank=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateField(auto_now_add=True)
 
