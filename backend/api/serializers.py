@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Vendor, Department, Status, Product, TransferLog, RepairStatus, RepairLog
+from .models import Vendor, Department, Status, Category, Product, TransferLog, RepairStatus, RepairLog
 
 
 class VendorSerializer(serializers.ModelSerializer):
@@ -19,6 +19,10 @@ class StatusSerializer(serializers.ModelSerializer):
         model = Status
         fields = '__all__'
 
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = '__all__'
 
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
