@@ -72,7 +72,6 @@ function Dashboard() {
         </div>
       )}
 
-      {/* Optional: Add charts or tables below */}
       <div className="mt-8">
         <h2 className="text-xl font-semibold mb-4">Recent Products</h2>
       </div>

@@ -4,6 +4,7 @@ import Dashboard from "./components/pages/Dashboard"
 import Products from "./components/pages/Products"
 import Departments from "./components/pages/Departments"
 import Vendors from "./components/pages/Vendors"
+import Categories from "./components/pages/Categories"
 
 function App() {
   
@@ -17,6 +18,7 @@ function App() {
             <Route path="/products" element={<Products />} />
             <Route path="/departments" element={<Departments />} />
             <Route path="/vendors" element={<Vendors />} />
+            <Route path="/categories" element={<Categories />} />
           </Route>
         </Routes>
       </BrowserRouter>
