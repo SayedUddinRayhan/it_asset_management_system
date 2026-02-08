@@ -6,8 +6,37 @@ import { useNavigate } from "react-router-dom";
 function Navbar({ onMobileMenuToggle }) {
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
   const profileRef = useRef();
   const navigate = useNavigate();
+
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  const formatDateTime = (date) => {
+    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    
+    const dayName = days[date.getDay()];
+    const day = date.getDate();
+    const month = months[date.getMonth()];
+    const year = String(date.getFullYear()).slice(-2); // last 2 digits
+
+    let hours = date.getHours();
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    const seconds = String(date.getSeconds()).padStart(2, "0");
+    const ampm = hours >= 12 ? "PM" : "AM";
+    hours = hours % 12 || 12; // convert 0 to 12
+
+    return `${dayName}, ${day}-${month}-${year} ${hours}:${minutes}:${seconds} ${ampm}`;
+  };
+
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -31,9 +60,8 @@ function Navbar({ onMobileMenuToggle }) {
           <HiOutlineMenu className="w-6 h-6 text-gray-700" />
         </button>
 
-        <span className="text-gray-800 font-bold truncate text-lg sm:text-xl md:text-2xl flex-shrink-0">
-          <span className="sm:hidden">Asset Mgmt</span>
-          <span className="hidden sm:inline">Asset Management</span>
+        <span className="text-gray-800 font-bold truncate text-sm sm:text-base md:text-lg lg:text-xl flex-shrink-0">
+        {formatDateTime(currentTime)}
         </span>
       </div>
 

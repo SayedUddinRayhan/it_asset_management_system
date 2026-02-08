@@ -2,6 +2,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom"
 import Layout from "./components/layout/Layout"
 import Dashboard from "./components/pages/Dashboard"
 import Products from "./components/pages/Products"
+import Departments from "./components/pages/Departments"
+import Vendors from "./components/pages/Vendors"
 
 function App() {
   
@@ -13,7 +15,8 @@ function App() {
           <Route element={<Layout />}>
             <Route path="/" element={<Dashboard />} />
             <Route path="/products" element={<Products />} />
-            <Route path
+            <Route path="/departments" element={<Departments />} />
+            <Route path="/vendors" element={<Vendors />} />
           </Route>
         </Routes>
       </BrowserRouter>
