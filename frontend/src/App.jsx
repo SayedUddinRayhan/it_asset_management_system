@@ -5,6 +5,7 @@ import Products from "./components/pages/Products"
 import Departments from "./components/pages/Departments"
 import Vendors from "./components/pages/Vendors"
 import Categories from "./components/pages/Categories"
+import Status from "./components/pages/Status"
 
 function App() {
   
@@ -19,6 +20,7 @@ function App() {
             <Route path="/departments" element={<Departments />} />
             <Route path="/vendors" element={<Vendors />} />
             <Route path="/categories" element={<Categories />} />
+            <Route path="/statuses" element={<Status />} />
           </Route>
         </Routes>
       </BrowserRouter>

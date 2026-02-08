@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { FaTachometerAlt, FaBoxOpen, FaStore, FaSitemap, FaTags, FaExchangeAlt, FaTools, FaBars } from "react-icons/fa";
+import { FaTachometerAlt, FaBoxOpen, FaStore, FaSitemap, FaTags, FaExchangeAlt, FaTools, FaBars, FaListAlt } from "react-icons/fa";
 
 function Sidebar({ sidebarOpen, setSidebarOpen, sidebarCollapsed, setSidebarCollapsed }) {
   const menuItems = [
@@ -10,6 +10,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen, sidebarCollapsed, setSidebarColl
     { name: "Categories", path: "/categories", icon: FaTags },
     { name: "Transfers", path: "/transfers", icon: FaExchangeAlt },
     { name: "Repairs", path: "/repairs", icon: FaTools },
+    { name: "Statuses", path: "/statuses", icon: FaListAlt },
   ];
 
   return (
