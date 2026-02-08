@@ -44,10 +44,10 @@ function Products() {
               <p>Qty: {product.quantity}</p>
               <p>Price: ৳{product.price}</p>
 
-              <p>Status ID: {product.status}</p>
-              <p>Category ID: {product.category}</p>
-              <p>Vendor ID: {product.vendor}</p>
-              <p>Department ID: {product.current_department}</p>
+              <p>Status: {product.status}</p>
+              <p>Category: {product.category}</p>
+              <p>Vendor: {product.vendor}</p>
+              <p>Department: {product.current_department}</p>
 
               <p className="text-xs text-gray-400">
                 Created:{" "}

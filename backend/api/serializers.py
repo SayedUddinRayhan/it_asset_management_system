@@ -25,6 +25,11 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class ProductSerializer(serializers.ModelSerializer):
+
+    category = serializers.StringRelatedField()
+    vendor = serializers.StringRelatedField()
+    current_department = serializers.StringRelatedField()
+    status = serializers.StringRelatedField()
     class Meta:
         model = Product
         fields = '__all__'
