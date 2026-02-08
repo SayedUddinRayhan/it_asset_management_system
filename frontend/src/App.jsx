@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom"
 import Layout from "./components/layout/Layout"
 import Dashboard from "./components/pages/Dashboard"
-import Products from "./components/pages/Products"
+import Products from "./components/pages/products/Products"
 import Departments from "./components/pages/Departments"
 import Vendors from "./components/pages/Vendors"
 import Categories from "./components/pages/Categories"

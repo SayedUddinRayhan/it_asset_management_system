@@ -12,7 +12,6 @@ function Sidebar({ sidebarOpen, setSidebarOpen, sidebarCollapsed, setSidebarColl
     { name: "Repairs", path: "/repairs", icon: FaTools },
     { name: "Statuses", path: "/statuses", icon: FaListAlt },
     { name: "Repair Statuses", path: "/repair-statuses", icon: FaClipboardCheck },
-    { name: "Transfer Logs", path: "/transfers", icon: FaHistory  },
   ];
 
   return (
