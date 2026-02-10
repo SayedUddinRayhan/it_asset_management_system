@@ -9,7 +9,7 @@ function Vendors() {
     const fetchVendors = async () => {
       try {
         const res = await axios.get("http://127.0.0.1:8000/api/vendors/");
-        setVendors(res.data);
+        setVendors(res.data.results);
       } catch (error) {
         console.error("Failed to fetch vendors", error);
       } finally {

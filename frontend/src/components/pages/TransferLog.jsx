@@ -11,7 +11,7 @@ function TransferLog() {
         const res = await axios.get(
           "http://127.0.0.1:8000/api/transfers/"
         );
-        setTransferLogs(res.data);
+        setTransferLogs(res.data.results);
       } catch (error) {
         console.error("Failed to fetch transfer logs", error);
       } finally {

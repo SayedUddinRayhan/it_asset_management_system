@@ -22,10 +22,10 @@ function Dashboard() {
         ]);
 
         setSummary({
-          products: productsRes.data.length,
-          vendors: vendorsRes.data.length,
-          departments: departmentsRes.data.length,
-          repairs: repairsRes.data.length,
+          products: productsRes.data.results.length,
+          vendors: vendorsRes.data.results.length,
+          departments: departmentsRes.data.results.length,
+          repairs: repairsRes.data.results.length,
         });
       } catch (error) {
         console.error("Failed to fetch dashboard data", error);

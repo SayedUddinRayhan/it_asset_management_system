@@ -9,7 +9,7 @@ function Status() {
     const fetchData = async () => {
       try {
         const res = await axios.get("http://127.0.0.1:8000/api/statuses/");
-        setStatuses(res.data);
+        setStatuses(res.data.results);
       } catch (err) {
         console.error("Failed to fetch status", err);
       } finally {

@@ -11,7 +11,7 @@ function RepairLog() {
         const res = await axios.get(
           "http://127.0.0.1:8000/api/repairs/"
         );
-        setRepairLogs(res.data);
+        setRepairLogs(res.data.results);
       } catch (error) {
         console.error("Failed to fetch repair logs", error);
       } finally {

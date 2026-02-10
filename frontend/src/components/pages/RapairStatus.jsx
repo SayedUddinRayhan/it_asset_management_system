@@ -11,7 +11,7 @@ function RepairStatus() {
         const res = await axios.get(
           "http://127.0.0.1:8000/api/repair-statuses/"
         );
-        setRepairStatuses(res.data);
+        setRepairStatuses(res.data.results);
       } catch (error) {
         console.error("Failed to fetch repair status", error);
       } finally {
