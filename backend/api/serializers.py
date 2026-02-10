@@ -25,14 +25,18 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class ProductSerializer(serializers.ModelSerializer):
-
-    category = serializers.StringRelatedField()
-    vendor = serializers.StringRelatedField()
-    current_department = serializers.StringRelatedField()
-    status = serializers.StringRelatedField()
+    vendor_name = serializers.CharField(source='vendor.name', read_only=True)
+    department_name = serializers.CharField(source='current_department.name', read_only=True)
+    category_name = serializers.CharField(source='category.name', read_only=True)
+    status_name = serializers.CharField(source='status.name', read_only=True)
+    
     class Meta:
         model = Product
-        fields = '__all__'
+        fields = [
+            'id', 'name', 'model_number', 'category_name',
+            'vendor_name', 'department_name', 'status_name', 'price',
+        ]
+
 
 
 class TransferLogSerializer(serializers.ModelSerializer):
