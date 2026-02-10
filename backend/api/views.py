@@ -4,6 +4,19 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 from .models import Vendor, Department, Status, Category, Product, TransferLog, RepairStatus, RepairLog
 from .serializers import VendorSerializer, DepartmentSerializer, StatusSerializer, CategorySerializer, ProductSerializer, TransferLogSerializer, RepairStatusSerializer, RepairLogSerializer
 
+import io
+import pandas as pd
+from django.http import HttpResponse
+from rest_framework.views import APIView
+from reportlab.lib.pagesizes import landscape, A4
+from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+
+from openpyxl import load_workbook
+from openpyxl.styles import Font, Alignment
+from openpyxl.utils import get_column_letter
+
 
 class VendorViewSet(ModelViewSet):
     queryset = Vendor.objects.all().order_by("-created_at")
@@ -53,6 +66,182 @@ class ProductViewSet(ModelViewSet):
     def perform_destroy(self, instance):
         instance.is_active = False
         instance.save(update_fields=["is_active"])
+
+
+
+# Excel Export
+class ProductExportExcelView(APIView):
+
+    def post(self, request, *args, **kwargs):
+        filters = request.data
+        qs = Product.objects.filter(is_active=True)
+
+        # Apply filters
+        search = filters.get("search")
+        status = filters.get("status")
+        category = filters.get("category")
+        department = filters.get("department")
+        ordering = filters.get("ordering", "-created_at")
+
+        if search:
+            qs = qs.filter(name__icontains=search)
+        if status:
+            qs = qs.filter(status_id=status)
+        if category:
+            qs = qs.filter(category_id=category)
+        if department:
+            qs = qs.filter(current_department_id=department)
+
+        qs = qs.order_by(ordering)
+
+        # Prepare DataFrame
+        data = []
+        for p in qs:
+            data.append({
+                "Name": p.name,
+                "Category": p.category.name if p.category else "",
+                "Department": p.current_department.name if p.current_department else "",
+                "Vendor": p.vendor.name if p.vendor else "",
+                "Price": float(p.price),
+                "Status": p.status.name if p.status else "",
+                "Created At": p.created_at.strftime("%Y-%m-%d %H:%M"),
+            })
+
+        df = pd.DataFrame(data)
+
+        # Create Excel
+        buffer = io.BytesIO()
+        with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
+            df.to_excel(writer, index=False, sheet_name="Products")
+            sheet = writer.book["Products"]
+
+            # Style header
+            header_font = Font(bold=True)
+            for cell in sheet[1]:
+                cell.font = header_font
+                cell.alignment = Alignment(horizontal="center")
+
+            # Auto column width
+            for col in sheet.columns:
+                max_length = 0
+                col_letter = get_column_letter(col[0].column)
+                for cell in col:
+                    try:
+                        max_length = max(max_length, len(str(cell.value)))
+                    except:
+                        pass
+                sheet.column_dimensions[col_letter].width = max_length + 4
+
+            # Freeze header
+            sheet.freeze_panes = "A2"
+
+        buffer.seek(0)
+
+        response = HttpResponse(
+            buffer,
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        response["Content-Disposition"] = "attachment; filename=products.xlsx"
+        return response
+
+
+# PDF Export
+class ProductExportPDFView(APIView):
+
+    def post(self, request, *args, **kwargs):
+        filters = request.data
+        qs = Product.objects.filter(is_active=True)
+
+        # Apply filters
+        search = filters.get("search")
+        status = filters.get("status")
+        category = filters.get("category")
+        department = filters.get("department")
+        ordering = filters.get("ordering", "-created_at")
+
+        if search:
+            qs = qs.filter(name__icontains=search)
+        if status:
+            qs = qs.filter(status_id=status)
+        if category:
+            qs = qs.filter(category_id=category)
+        if department:
+            qs = qs.filter(current_department_id=department)
+
+        qs = qs.order_by(ordering)
+
+        buffer = io.BytesIO()
+        doc = SimpleDocTemplate(
+            buffer,
+            pagesize=landscape(A4),  # <-- A4 landscape
+            leftMargin=30,
+            rightMargin=30,
+            topMargin=60,
+            bottomMargin=30
+        )
+
+        styles = getSampleStyleSheet()
+        elements = []
+
+        # Title
+        title = Paragraph("Products Report", styles["Title"])
+        elements.append(title)
+        elements.append(Spacer(1, 12))
+
+        # Table Data
+        data = []
+        headers = ["Name", "Category", "Department", "Vendor", "Price", "Status", "Created At"]
+        data.append(headers)
+
+        for prod in qs:
+            row = [
+                prod.name,
+                prod.category.name if prod.category else "",
+                prod.current_department.name if prod.current_department else "",
+                prod.vendor.name if prod.vendor else "",
+                f"{prod.price:.2f}",
+                prod.status.name if prod.status else "",
+                prod.created_at.strftime("%Y-%m-%d %H:%M"),
+            ]
+            data.append(row)
+
+        table = Table(data, repeatRows=1)
+        style = TableStyle([
+            ("BACKGROUND", (0, 0), (-1, 0), colors.grey),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+            ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("FONTSIZE", (0, 0), (-1, 0), 12),
+            ("BOTTOMPADDING", (0, 0), (-1, 0), 8),
+            ("BACKGROUND", (0, 1), (-1, -1), colors.whitesmoke),
+            ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
+        ])
+        # Alternating row colors
+        for i in range(1, len(data)):
+            if i % 2 == 0:
+                style.add("BACKGROUND", (0, i), (-1, i), colors.lightgrey)
+        table.setStyle(style)
+        elements.append(table)
+
+        # Header & Footer
+        def header_footer(canvas_obj, doc_obj):
+            canvas_obj.saveState()
+            # Header (hospital name)
+            canvas_obj.setFont("Helvetica-Bold", 12)
+            canvas_obj.drawString(30, doc_obj.pagesize[1] - 40, "Feni Diabetes Hospital")
+            # Footer (page number)
+            page_num_text = f"Page {doc_obj.page}"
+            canvas_obj.setFont("Helvetica", 9)
+            canvas_obj.drawRightString(doc_obj.pagesize[0] - 30, 20, page_num_text)
+            canvas_obj.restoreState()
+
+        doc.build(elements, onFirstPage=header_footer, onLaterPages=header_footer)
+
+        buffer.seek(0)
+        response = HttpResponse(buffer, content_type="application/pdf")
+        response["Content-Disposition"] = "attachment; filename=products.pdf"
+        return response
+
 
 
 class TransferLogViewSet(ModelViewSet):
