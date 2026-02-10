@@ -3,6 +3,7 @@ import { FaRegUserCircle, FaCog, FaPowerOff, FaSearch } from "react-icons/fa";
 import { HiChevronDown, HiOutlineMenu } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
 
+
 function Navbar({ onMobileMenuToggle }) {
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
@@ -49,27 +50,27 @@ function Navbar({ onMobileMenuToggle }) {
   }, []);
 
   return (
-    <nav className="bg-white shadow-md px-4 py-3 flex items-center justify-between relative">
+    <nav className="bg-white shadow-md px-4 py-3 flex items-center justify-between relative w-full">
 
       {/* Left: Mobile Menu + Logo */}
-      <div className="flex items-center gap-3 flex-shrink-0 min-w-0">
+      <div className="flex items-center gap-3 min-w-0 flex-1 sm:flex-[1_1_auto]">
         <button
-          className="lg:hidden p-2 rounded hover:bg-gray-200"
+          className="lg:hidden p-2 rounded hover:bg-gray-200 flex-shrink-0"
           onClick={onMobileMenuToggle}
         >
           <HiOutlineMenu className="w-6 h-6 text-gray-700" />
         </button>
 
-        <span className="text-gray-800 font-bold truncate text-sm sm:text-base md:text-lg lg:text-xl flex-shrink-0">
-        {formatDateTime(currentTime)}
+        <span className="text-gray-500 font-semibold truncate text-sm sm:text-base md:text-lg lg:text-lg">
+          {formatDateTime(currentTime)}
         </span>
       </div>
 
       {/* Right: Search + Profile */}
       <div className="flex items-center gap-2 flex-1 min-w-0 justify-end">
 
-        {/* Desktop & Tablet Search Input */}
-        <div className="hidden sm:flex gap-2 items-center max-w-[50%] lg:max-w-sm flex-shrink-0">
+        {/* Desktop & Tablet Search */}
+        <div className="hidden sm:flex gap-2 items-center max-w-full lg:max-w-sm flex-shrink">
           <div className="relative flex-1 min-w-0">
             <input
               type="text"
@@ -80,7 +81,7 @@ function Navbar({ onMobileMenuToggle }) {
           </div>
           <button
             onClick={() => navigate("/search")}
-            className="flex-shrink-0 bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700"
+            className="bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 flex-shrink-0"
           >
             Search
           </button>
@@ -94,8 +95,8 @@ function Navbar({ onMobileMenuToggle }) {
           <FaSearch className="w-5 h-5 text-gray-700" />
         </button>
 
-        {/* Profile Dropdown */}
-        <div className="relative ml-2 flex-shrink-0" ref={profileRef}>
+        {/* Profile */}
+        <div className="relative ml-2" ref={profileRef}>
           <button
             className="flex items-center gap-2 rounded-full border border-gray-300 px-2 py-1 hover:bg-gray-100"
             onClick={() => setProfileOpen(!profileOpen)}
@@ -138,6 +139,7 @@ function Navbar({ onMobileMenuToggle }) {
         </div>
       )}
     </nav>
+
   );
 }
 

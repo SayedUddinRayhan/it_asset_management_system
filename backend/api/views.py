@@ -9,6 +9,7 @@ import pandas as pd
 from django.http import HttpResponse
 from rest_framework.views import APIView
 from reportlab.lib.pagesizes import landscape, A4
+from reportlab.lib.units import inch
 from reportlab.lib import colors
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
@@ -173,11 +174,11 @@ class ProductExportPDFView(APIView):
         buffer = io.BytesIO()
         doc = SimpleDocTemplate(
             buffer,
-            pagesize=landscape(A4),  # <-- A4 landscape
-            leftMargin=30,
-            rightMargin=30,
+            pagesize=landscape(A4),
+            leftMargin=20,
+            rightMargin=20,
             topMargin=60,
-            bottomMargin=30
+            bottomMargin=20
         )
 
         styles = getSampleStyleSheet()
@@ -190,36 +191,39 @@ class ProductExportPDFView(APIView):
 
         # Table Data
         data = []
-        headers = ["Name", "Category", "Department", "Vendor", "Price", "Status", "Created At"]
+        headers = ["SL No","Name", "Category", "Department", "Vendor", "Price", "Status", "Created At"]
         data.append(headers)
 
-        for prod in qs:
+        for i, prod in enumerate(qs, start=1):
             row = [
+                i,
                 prod.name,
                 prod.category.name if prod.category else "",
                 prod.current_department.name if prod.current_department else "",
                 prod.vendor.name if prod.vendor else "",
                 f"{prod.price:.2f}",
                 prod.status.name if prod.status else "",
-                prod.created_at.strftime("%Y-%m-%d %H:%M"),
+                prod.created_at.strftime("%d-%m-%Y %H:%M"),
             ]
             data.append(row)
 
+        
+
         table = Table(data, repeatRows=1)
         style = TableStyle([
-            ("BACKGROUND", (0, 0), (-1, 0), colors.grey),
-            ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+            ("BACKGROUND", (0, 0), (-1, 0), colors.whitesmoke),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.black),
             ("ALIGN", (0, 0), (-1, -1), "CENTER"),
             ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
             ("FONTSIZE", (0, 0), (-1, 0), 12),
             ("BOTTOMPADDING", (0, 0), (-1, 0), 8),
-            ("BACKGROUND", (0, 1), (-1, -1), colors.whitesmoke),
+            ("BACKGROUND", (0, 1), (-1, -1), colors.white),
             ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
         ])
         # Alternating row colors
         for i in range(1, len(data)):
             if i % 2 == 0:
-                style.add("BACKGROUND", (0, i), (-1, i), colors.lightgrey)
+                style.add("BACKGROUND", (0, i), (-1, i), colors.whitesmoke)
         table.setStyle(style)
         elements.append(table)
 
@@ -227,7 +231,7 @@ class ProductExportPDFView(APIView):
         def header_footer(canvas_obj, doc_obj):
             canvas_obj.saveState()
             # Header (hospital name)
-            canvas_obj.setFont("Helvetica-Bold", 12)
+            canvas_obj.setFont("Helvetica-Bold", 14)
             canvas_obj.drawString(30, doc_obj.pagesize[1] - 40, "Feni Diabetes Hospital")
             # Footer (page number)
             page_num_text = f"Page {doc_obj.page}"
