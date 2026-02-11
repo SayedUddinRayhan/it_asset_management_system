@@ -52,6 +52,7 @@ class Product(models.Model):
     vendor = models.ForeignKey(Vendor, on_delete=models.SET_NULL, null=True)
     current_department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True)
     model_number = models.CharField(max_length=200, blank=True)
+    serial_number = models.CharField(max_length=200, blank=True)
     description = models.TextField(blank=True)
     purchase_date = models.DateField(null=True, blank=True)
     warranty_years = models.PositiveIntegerField(null=True, blank=True) 

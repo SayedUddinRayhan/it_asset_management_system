@@ -9,6 +9,7 @@ import Status from "./components/pages/Status"
 import RepairStatus from "./components/pages/RapairStatus" 
 import TransferLog from "./components/pages/TransferLog"
 import RepairLog from "./components/pages/RepairLog"
+import AddProduct from "./components/pages/products/AddProduct"
 
 function App() {
   
@@ -20,6 +21,7 @@ function App() {
           <Route element={<Layout />}>
             <Route path="/" element={<Dashboard />} />
             <Route path="/products" element={<Products />} />
+            <Route path="/products/new" element={<AddProduct />} />
             <Route path="/departments" element={<Departments />} />
             <Route path="/vendors" element={<Vendors />} />
             <Route path="/categories" element={<Categories />} />

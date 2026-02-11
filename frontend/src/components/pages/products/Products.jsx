@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Select from "react-select";
@@ -22,7 +23,7 @@ function Products() {
   const [categoryOptions, setCategoryOptions] = useState([]);
   const [departmentOptions, setDepartmentOptions] = useState([]);
 
-  /* ---------------- FETCH FILTER OPTIONS ---------------- */
+ 
   useEffect(() => {
     const fetchFilters = async () => {
       try {
@@ -48,7 +49,7 @@ function Products() {
     fetchFilters();
   }, []);
 
-  /* ---------------- FETCH PRODUCTS ---------------- */
+  
   useEffect(() => {
     const timer = setTimeout(() => fetchProducts(page), 400);
     return () => clearTimeout(timer);
@@ -66,10 +67,7 @@ function Products() {
         page: pageNumber,
       };
 
-      const res = await axios.get("http://127.0.0.1:8000/api/products/", {
-        params,
-      });
-
+      const res = await axios.get("http://127.0.0.1:8000/api/products/", {params,});
       setProducts(res.data.results);
       setCount(res.data.count);
     } catch (err) {
@@ -81,16 +79,12 @@ function Products() {
 
   const totalPages = Math.ceil(count / 10);
 
-  /* ---------------- EXPORT ---------------- */
   const exportFile = async (type) => {
     try {
       const url =
-        type === "excel"
-          ? "http://127.0.0.1:8000/api/export/products/excel/"
-          : "http://127.0.0.1:8000/api/export/products/pdf/";
+        type === "excel" ? "http://127.0.0.1:8000/api/export/products/excel/" : "http://127.0.0.1:8000/api/export/products/pdf/";
 
-      const res = await axios.post(
-        url,
+      const res = await axios.post(url,
         {
           search: filters.search || "",
           status: filters.status?.value || null,
@@ -117,181 +111,184 @@ function Products() {
   };
 
   return (
-    <div className="p-4 sm:p-6 space-y-6 max-w-full">
-      {/* HEADER */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
-            Products
-          </h1>
-          <p className="text-sm text-gray-500">Manage all products</p>
-        </div>
+    <div className="max-w-6xl mx-auto p-6 space-y-6">
+      <div className="bg-white shadow-xl rounded-2xl p-6">
+          {/* HEADER */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
+                Products
+              </h1>
+              <p className="text-sm text-gray-500">Manage all products</p>
+            </div>
 
-        <div className="flex flex-wrap gap-2 w-full sm:w-auto">
-          <button className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg shadow w-full sm:w-auto justify-center">
-            <FaPlus size={14} /> Add Product
-          </button>
+            <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+              <Link to="/products/new" className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg shadow w-full sm:w-auto justify-center">
+                <FaPlus size={14} /> Add Product
+              </Link>
 
-          <button
-            onClick={() => exportFile("excel")}
-            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow w-full sm:w-auto"
-          >
-            Excel
-          </button>
-          <button
-            onClick={() => exportFile("pdf")}
-            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg shadow w-full sm:w-auto"
-          >
-            PDF
-          </button>
-        </div>
-      </div>
-
-      {/* FILTERS */}
-      <div className="bg-white p-4 rounded-xl shadow grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-        <input
-          type="text"
-          placeholder="Search..."
-          className="border p-2 rounded border-gray-300"
-          value={filters.search}
-          onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-        />
-
-        <Select
-          placeholder="Category"
-          options={categoryOptions}
-          value={filters.category}
-          onChange={(v) => setFilters({ ...filters, category: v })}
-          isClearable
-        />
-
-        <Select
-          placeholder="Department"
-          options={departmentOptions}
-          value={filters.department}
-          onChange={(v) => setFilters({ ...filters, department: v })}
-          isClearable
-        />
-
-        <Select
-          placeholder="Status"
-          options={statusOptions}
-          value={filters.status}
-          onChange={(v) => setFilters({ ...filters, status: v })}
-          isClearable
-        />
-
-        <select
-          className="border p-2 rounded border-gray-300 text-gray-500"
-          value={filters.ordering}
-          onChange={(e) => setFilters({ ...filters, ordering: e.target.value })}
-        >
-          <option value="-created_at">Newest</option>
-          <option value="created_at">Oldest</option>
-          <option value="name">Name A-Z</option>
-          <option value="-name">Name Z-A</option>
-          <option value="price">Price Low</option>
-          <option value="-price">Price High</option>
-        </select>
-      </div>
-
-      {/* TABLE */}
-<div className="bg-white rounded-xl shadow overflow-hidden">
-  <div className="overflow-x-auto w-full">
-    {loading ? (
-      <p className="p-6 text-center">Loading...</p>
-    ) : (
-      <table className="w-full text-[11px] sm:text-sm table-auto min-w-[900px]">
-        <thead className="bg-gray-50 border-b">
-          <tr className="text-left text-gray-600">
-            <th className="px-2 py-2 sm:px-3 sm:py-3 w-[30px]">SL</th>
-            <th className="px-2 py-2 sm:px-3 sm:py-3">Name</th>
-            <th className="hidden sm:table-cell px-2 py-2 sm:px-3 sm:py-3">Category</th>
-            <th className="hidden md:table-cell px-2 py-2 sm:px-3 sm:py-3">Department</th>
-            <th className="hidden lg:table-cell px-2 py-2 sm:px-3 sm:py-3">Vendor</th>
-            <th className="px-2 py-2 sm:px-3 sm:py-3 w-[80px]">Price</th>
-            <th className="px-1 py-2 sm:px-2 sm:py-3 w-[70px]">Purchase</th>
-            <th className="hidden sm:table-cell px-1 py-2 sm:px-2 sm:py-3 w-[60px]">Warranty</th>
-            <th className="hidden md:table-cell px-1 py-2 sm:px-2 sm:py-3 w-[70px]">End</th>
-            <th className="px-2 py-2 sm:px-3 sm:py-3 w-[70px]">Status</th>
-            <th className="px-2 py-2 sm:px-3 sm:py-3 text-center w-[80px]">Actions</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {products.map((p, index) => (
-            <tr key={p.id} className="border-t hover:bg-gray-50">
-              <td className="px-2 py-2 sm:px-3 sm:py-3 text-center">{(page - 1) * 10 + index + 1}</td>
-
-              {/* Name / Category / Department: wrap after 30 chars */}
-              <td className="px-2 py-2 sm:px-3 sm:py-3">
-                <div className="break-words max-w-[200px]">{p.name}</div>
-              </td>
-              <td className="hidden sm:table-cell px-2 py-2 sm:px-3 sm:py-3 break-words max-w-[120px]">{p.category_name}</td>
-              <td className="hidden md:table-cell px-2 py-2 sm:px-3 sm:py-3 break-words max-w-[130px]">{p.department_name}</td>
-              <td className="hidden lg:table-cell px-2 py-2 sm:px-3 sm:py-3 break-words max-w-[130px]">{p.vendor_name}</td>
-
-              <td className="px-2 py-2 sm:px-3 sm:py-3 whitespace-nowrap">৳ {p.price}</td>
-              <td className="px-1 py-2 sm:px-2 sm:py-3 whitespace-nowrap text-[10px] sm:text-xs">
-                {p.purchase_date ? new Date(p.purchase_date).toLocaleDateString("en-GB") : "N/A"}
-              </td>
-              <td className="hidden sm:table-cell px-1 py-2 sm:px-2 sm:py-3 whitespace-nowrap text-[10px] sm:text-xs">
-                {p.warranty_years ? `${p.warranty_years}y` : "N/A"}
-              </td>
-              <td className="hidden md:table-cell px-1 py-2 sm:px-2 sm:py-3 whitespace-nowrap text-[10px] sm:text-xs">
-                {p.warranty_end_date ? new Date(p.warranty_end_date).toLocaleDateString("en-GB") : "N/A"}
-              </td>
-
-              <td className="px-2 py-2 sm:px-3 sm:py-3 whitespace-nowrap">
-                <div className="flex items-center">
-                  <span className="px-2 py-1 rounded-full text-[10px] sm:text-xs bg-green-100 text-green-700">{p.status_name}</span>
-                </div>
-              </td>
-
-              <td className="px-2 py-2 sm:px-3 sm:py-3 whitespace-nowrap">
-                <div className="flex items-center justify-center gap-1">
-                  <button className="p-1.5 sm:p-2 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200">
-                    <HiOutlinePencilAlt />
-                  </button>
-                  <button className="p-1.5 sm:p-2 rounded-full bg-red-100 text-red-600 hover:bg-red-200">
-                    <HiOutlineTrash />
-                  </button>
-                </div>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    )}
-  </div>
-</div>
-
-
-      {/* PAGINATION */}
-      {totalPages > 1 && (
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-3 text-sm">
-          <p className="text-gray-500">
-            Page {page} of {totalPages}
-          </p>
-          <div className="flex gap-2">
-            <button
-              disabled={page === 1}
-              onClick={() => setPage(page - 1)}
-              className="px-3 py-1 border rounded disabled:opacity-50"
-            >
-              Prev
-            </button>
-            <button
-              disabled={page === totalPages}
-              onClick={() => setPage(page + 1)}
-              className="px-3 py-1 border rounded disabled:opacity-50"
-            >
-              Next
-            </button>
+              <button
+                onClick={() => exportFile("excel")}
+                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow w-full sm:w-auto"
+              >
+                Excel
+              </button>
+              <button
+                onClick={() => exportFile("pdf")}
+                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg shadow w-full sm:w-auto"
+              >
+                PDF
+              </button>
+            </div>
           </div>
+
+          {/* FILTERS */}
+          <div className="bg-white p-4 rounded-xl shadow grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+            <input
+              type="text"
+              placeholder="Search..."
+              className="border p-2 rounded border-gray-300"
+              value={filters.search}
+              onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+            />
+
+            <Select
+              placeholder="Category"
+              options={categoryOptions}
+              value={filters.category}
+              onChange={(v) => setFilters({ ...filters, category: v })}
+              isClearable
+            />
+
+            <Select
+              placeholder="Department"
+              options={departmentOptions}
+              value={filters.department}
+              onChange={(v) => setFilters({ ...filters, department: v })}
+              isClearable
+            />
+
+            <Select
+              placeholder="Status"
+              options={statusOptions}
+              value={filters.status}
+              onChange={(v) => setFilters({ ...filters, status: v })}
+              isClearable
+            />
+
+            <select
+              className="border p-2 rounded border-gray-300 text-gray-500"
+              value={filters.ordering}
+              onChange={(e) => setFilters({ ...filters, ordering: e.target.value })}
+            >
+              <option value="-created_at">Newest</option>
+              <option value="created_at">Oldest</option>
+              <option value="name">Name A-Z</option>
+              <option value="-name">Name Z-A</option>
+              <option value="price">Price Low</option>
+              <option value="-price">Price High</option>
+            </select>
+          </div>
+
+          {/* TABLE */}
+          <div className="bg-white rounded-xl shadow overflow-hidden">
+            <div className="overflow-x-auto w-full">
+              {loading ? (
+                <p className="p-6 text-center">Loading...</p>
+              ) : (
+                <table className="w-full text-[11px] sm:text-sm table-auto min-w-[900px]">
+                  <thead className="bg-gray-50 border-b">
+                    <tr className="text-left text-gray-600">
+                      <th className="px-2 py-2 sm:px-3 sm:py-3 w-[30px]">SL</th>
+                      <th className="px-2 py-2 sm:px-3 sm:py-3">Name</th>
+                      <th className="hidden sm:table-cell px-2 py-2 sm:px-3 sm:py-3">Category</th>
+                      <th className="hidden md:table-cell px-2 py-2 sm:px-3 sm:py-3">Department</th>
+                      <th className="hidden lg:table-cell px-2 py-2 sm:px-3 sm:py-3">Vendor</th>
+                      <th className="px-2 py-2 sm:px-3 sm:py-3 w-[80px]">Price</th>
+                      <th className="px-1 py-2 sm:px-2 sm:py-3 w-[70px]">Purchase</th>
+                      <th className="hidden sm:table-cell px-1 py-2 sm:px-2 sm:py-3 w-[60px]">Warranty</th>
+                      <th className="hidden md:table-cell px-1 py-2 sm:px-2 sm:py-3 w-[70px]">End</th>
+                      <th className="px-2 py-2 sm:px-3 sm:py-3 w-[70px]">Status</th>
+                      <th className="px-2 py-2 sm:px-3 sm:py-3 text-center w-[80px]">Actions</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {products.map((p, index) => (
+                      <tr key={p.id} className="border-t hover:bg-gray-50">
+                        <td className="px-2 py-2 sm:px-3 sm:py-3 text-center">{(page - 1) * 10 + index + 1}</td>
+
+                        {/* Name / Category / Department: wrap after 30 chars */}
+                        <td className="px-2 py-2 sm:px-3 sm:py-3">
+                          <div className="break-words max-w-[200px]">{p.name}</div>
+                        </td>
+                        <td className="hidden sm:table-cell px-2 py-2 sm:px-3 sm:py-3 break-words max-w-[120px]">{p.category_name}</td>
+                        <td className="hidden md:table-cell px-2 py-2 sm:px-3 sm:py-3 break-words max-w-[130px]">{p.department_name}</td>
+                        <td className="hidden lg:table-cell px-2 py-2 sm:px-3 sm:py-3 break-words max-w-[130px]">{p.vendor_name}</td>
+
+                        <td className="px-2 py-2 sm:px-3 sm:py-3 whitespace-nowrap">৳ {p.price}</td>
+                        <td className="px-1 py-2 sm:px-2 sm:py-3 whitespace-nowrap text-[10px] sm:text-xs">
+                          {p.purchase_date ? new Date(p.purchase_date).toLocaleDateString("en-GB") : "N/A"}
+                        </td>
+                        <td className="hidden sm:table-cell px-1 py-2 sm:px-2 sm:py-3 whitespace-nowrap text-[10px] sm:text-xs">
+                          {p.warranty_years ? `${p.warranty_years}y` : "N/A"}
+                        </td>
+                        <td className="hidden md:table-cell px-1 py-2 sm:px-2 sm:py-3 whitespace-nowrap text-[10px] sm:text-xs">
+                          {p.warranty_end_date ? new Date(p.warranty_end_date).toLocaleDateString("en-GB") : "N/A"}
+                        </td>
+
+                        <td className="px-2 py-2 sm:px-3 sm:py-3 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <span className="px-2 py-1 rounded-full text-[10px] sm:text-xs bg-green-100 text-green-700">{p.status_name}</span>
+                          </div>
+                        </td>
+
+                        <td className="px-2 py-2 sm:px-3 sm:py-3 whitespace-nowrap">
+                          <div className="flex items-center justify-center gap-1">
+                            <button className="p-1.5 sm:p-2 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200">
+                              <HiOutlinePencilAlt />
+                            </button>
+                            <button className="p-1.5 sm:p-2 rounded-full bg-red-100 text-red-600 hover:bg-red-200">
+                              <HiOutlineTrash />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
+
+
+          {/* PAGINATION */}
+          {totalPages > 1 && (
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-3 text-sm">
+              <p className="text-gray-500">
+                Page {page} of {totalPages}
+              </p>
+              <div className="flex gap-2">
+                <button
+                  disabled={page === 1}
+                  onClick={() => setPage(page - 1)}
+                  className="px-3 py-1 border rounded disabled:opacity-50"
+                >
+                  Prev
+                </button>
+                <button
+                  disabled={page === totalPages}
+                  onClick={() => setPage(page + 1)}
+                  className="px-3 py-1 border rounded disabled:opacity-50"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
         </div>
-      )}
-    </div>
+      </div>
+
   );
 }
 

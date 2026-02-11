@@ -9,7 +9,7 @@ import pandas as pd
 from django.http import HttpResponse
 from rest_framework.views import APIView
 from reportlab.lib.pagesizes import landscape, A4
-from reportlab.lib.units import inch
+from reportlab.lib.units import cm
 from reportlab.lib import colors
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
@@ -61,7 +61,7 @@ class ProductViewSet(ModelViewSet):
     serializer_class = ProductSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ["status", "category", "current_department"]
-    search_fields = ["name", "model_number"]
+    search_fields = ["name", "vendor__name", "current_department__name", "warranty_years"]
     ordering_fields = ["created_at", "name", "price"]
 
     def perform_destroy(self, instance):
@@ -101,6 +101,7 @@ class ProductExportExcelView(APIView):
             data.append({
                 "Name": p.name,
                 "Model Number": p.model_number,
+                "Serial Number": p.serial_number,
                 "Description": p.description,
                 "Category": p.category.name if p.category else "",
                 "Department": p.current_department.name if p.current_department else "",
@@ -153,9 +154,10 @@ class ProductExportExcelView(APIView):
         return response
 
 
-# PDF Export
-class ProductExportPDFView(APIView):
 
+
+# Export PDF
+class ProductExportPDFView(APIView):
     def post(self, request, *args, **kwargs):
         filters = request.data
         qs = Product.objects.filter(is_active=True)
@@ -182,72 +184,97 @@ class ProductExportPDFView(APIView):
         doc = SimpleDocTemplate(
             buffer,
             pagesize=landscape(A4),
-            leftMargin=20,
-            rightMargin=20,
-            topMargin=60,
-            bottomMargin=20
+            leftMargin=1*cm,
+            rightMargin=1*cm,
+            topMargin=2*cm,
+            bottomMargin=1*cm
         )
 
         styles = getSampleStyleSheet()
         elements = []
 
         # Title
-        title = Paragraph("Products Report", styles["Title"])
+        title_style = styles["Title"]
+        title_style.fontSize = 18
+        title_style.leading = 22
+        title = Paragraph("Products Report", title_style)
         elements.append(title)
         elements.append(Spacer(1, 12))
 
-        # Table Data
-        data = []
-        headers = ["SL No","Name", "Category", "Department", "Vendor", "Price", "Purchase Date", "Warranty", "Warranty End", "Status"]
-        data.append(headers)
+        # Table headers
+        headers = ["SL", "Name", "Category", "Department", "Vendor", "Price", "Purchase", "Warranty", "End", "Status"]
+        data = [headers]
+
+        # Wrap long text using Paragraph
+        wrap_style = styles["BodyText"]
+        wrap_style.fontSize = 9
+        wrap_style.leading = 11
 
         for i, prod in enumerate(qs, start=1):
             row = [
-                i,
-                prod.name,
-                prod.category.name if prod.category else "",
-                prod.current_department.name if prod.current_department else "",
-                prod.vendor.name if prod.vendor else "",
+                str(i),
+                Paragraph(prod.name if prod.name else "-", wrap_style),
+                Paragraph(prod.category.name if prod.category else "-", wrap_style),
+                Paragraph(prod.current_department.name if prod.current_department else "-", wrap_style),
+                Paragraph(prod.vendor.name if prod.vendor else "-", wrap_style),
                 f"{prod.price:.2f}",
-                prod.purchase_date.strftime("%d-%m-%Y") if prod.purchase_date else "",
-                f"{prod.warranty_years} years" if prod.warranty_years else "",
-                prod.warranty_end_date.strftime("%d-%m-%Y") if prod.warranty_end_date else "",
-                prod.status.name if prod.status else "",
+                prod.purchase_date.strftime("%d-%m-%Y") if prod.purchase_date else "-",
+                f"{prod.warranty_years}y" if prod.warranty_years else "-",
+                prod.warranty_end_date.strftime("%d-%m-%Y") if prod.warranty_end_date else "-",
+                Paragraph(prod.status.name if prod.status else "-", wrap_style),
             ]
             data.append(row)
 
-        
+        # Column widths (compact and balanced)
+        col_widths = [
+            1.0*cm,   # SL
+            5.5*cm,   # Name
+            3.0*cm,   # Category
+            3.0*cm,   # Department
+            3.0*cm,   # Vendor
+            2.0*cm,   # Price
+            2.5*cm,   # Purchase
+            1.9*cm,   # Warranty
+            2.0*cm,   # End
+            2.3*cm,   # Status
+        ]
 
-        table = Table(data, repeatRows=1)
+        table = Table(data, colWidths=col_widths, repeatRows=1)
+
+        # Professional table style
         style = TableStyle([
-            ("BACKGROUND", (0, 0), (-1, 0), colors.whitesmoke),
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#f0f0f0")),
             ("TEXTCOLOR", (0, 0), (-1, 0), colors.black),
             ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
             ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-            ("FONTSIZE", (0, 0), (-1, 0), 12),
-            ("BOTTOMPADDING", (0, 0), (-1, 0), 8),
-            ("BACKGROUND", (0, 1), (-1, -1), colors.white),
-            ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
+            ("FONTSIZE", (0, 0), (-1, 0), 11),
+            ("FONTSIZE", (0, 1), (-1, -1), 9),
+            ("GRID", (0, 0), (-1, -1), 0.4, colors.grey),
+            ("LEFTPADDING", (0, 0), (-1, -1), 3),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 3),
+            ("TOPPADDING", (0, 0), (-1, -1), 3),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
         ])
+
         # Alternating row colors
         for i in range(1, len(data)):
             if i % 2 == 0:
-                style.add("BACKGROUND", (0, i), (-1, i), colors.whitesmoke)
+                style.add("BACKGROUND", (0, i), (-1, i), colors.HexColor("#fafafa"))
+
         table.setStyle(style)
         elements.append(table)
 
         # Header & Footer
         def header_footer(canvas_obj, doc_obj):
             canvas_obj.saveState()
-            # Header (hospital name)
             canvas_obj.setFont("Helvetica-Bold", 14)
-            canvas_obj.drawString(30, doc_obj.pagesize[1] - 40, "Feni Diabetes Hospital")
-            # Footer (page number)
-            page_num_text = f"Page {doc_obj.page}"
+            canvas_obj.drawString(2*cm, doc_obj.pagesize[1] - 1.5*cm, "Feni Diabetes Hospital")
             canvas_obj.setFont("Helvetica", 9)
-            canvas_obj.drawRightString(doc_obj.pagesize[0] - 30, 20, page_num_text)
+            canvas_obj.drawRightString(doc_obj.pagesize[0] - 2*cm, 1*cm, f"Page {doc_obj.page}")
             canvas_obj.restoreState()
 
+        # Build PDF
         doc.build(elements, onFirstPage=header_footer, onLaterPages=header_footer)
 
         buffer.seek(0)
