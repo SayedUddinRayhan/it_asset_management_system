@@ -36,9 +36,9 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ("name", "category", "vendor", "current_department", "quantity", "price", "status", "is_active", "created_at")
+    list_display = ("name", "category", "vendor", "current_department", "quantity", "price", "status", "is_active", "purchase_date", "warranty_years", "warranty_end_date")
     search_fields = ("name", "model_number", "category__name", "vendor__name")
-    list_filter = ("status", "category", "vendor", "current_department", "is_active")
+    list_filter = ("status", "category", "vendor", "current_department", "is_active", "warranty_years")
     ordering = ("-created_at",)
 
 

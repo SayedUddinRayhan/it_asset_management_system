@@ -1,6 +1,6 @@
 from django.db import models
 from autoslug import AutoSlugField
-
+from dateutil.relativedelta import relativedelta
 class Vendor(models.Model):
     name = models.CharField(max_length=200)
     phone = models.CharField(max_length=50, blank=True)
@@ -54,7 +54,8 @@ class Product(models.Model):
     model_number = models.CharField(max_length=200, blank=True)
     description = models.TextField(blank=True)
     purchase_date = models.DateField(null=True, blank=True)
-    expiry_date = models.DateField(null=True, blank=True)
+    warranty_years = models.PositiveIntegerField(null=True, blank=True) 
+    warranty_end_date = models.DateField(null=True, blank=True)
     quantity = models.PositiveIntegerField(default=0)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     status = models.ForeignKey(Status, on_delete=models.SET_NULL, null=True)
@@ -62,6 +63,11 @@ class Product(models.Model):
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        if self.purchase_date and self.warranty_years:
+            self.warranty_end_date = self.purchase_date + relativedelta(years=self.warranty_years)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name

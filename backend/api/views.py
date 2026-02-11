@@ -100,12 +100,19 @@ class ProductExportExcelView(APIView):
         for p in qs:
             data.append({
                 "Name": p.name,
+                "Model Number": p.model_number,
+                "Description": p.description,
                 "Category": p.category.name if p.category else "",
                 "Department": p.current_department.name if p.current_department else "",
                 "Vendor": p.vendor.name if p.vendor else "",
                 "Price": float(p.price),
+                "Quantity": p.quantity,
+                "Purchase Date": p.purchase_date.strftime("%d-%m-%Y") if p.purchase_date else "",
+                "Warranty": f"{p.warranty_years} years" if p.warranty_years else "",
+                "Warranty End": p.warranty_end_date.strftime("%d-%m-%Y") if p.warranty_end_date else "",
                 "Status": p.status.name if p.status else "",
-                "Created At": p.created_at.strftime("%Y-%m-%d %H:%M"),
+                "Created At": p.created_at.strftime("%d-%m-%Y %H:%M:%S"),
+                "Updated At": p.updated_at.strftime("%d-%m-%Y %H:%M:%S"),
             })
 
         df = pd.DataFrame(data)
@@ -191,7 +198,7 @@ class ProductExportPDFView(APIView):
 
         # Table Data
         data = []
-        headers = ["SL No","Name", "Category", "Department", "Vendor", "Price", "Status", "Created At"]
+        headers = ["SL No","Name", "Category", "Department", "Vendor", "Price", "Purchase Date", "Warranty", "Warranty End", "Status"]
         data.append(headers)
 
         for i, prod in enumerate(qs, start=1):
@@ -202,8 +209,10 @@ class ProductExportPDFView(APIView):
                 prod.current_department.name if prod.current_department else "",
                 prod.vendor.name if prod.vendor else "",
                 f"{prod.price:.2f}",
+                prod.purchase_date.strftime("%d-%m-%Y") if prod.purchase_date else "",
+                f"{prod.warranty_years} years" if prod.warranty_years else "",
+                prod.warranty_end_date.strftime("%d-%m-%Y") if prod.warranty_end_date else "",
                 prod.status.name if prod.status else "",
-                prod.created_at.strftime("%d-%m-%Y %H:%M"),
             ]
             data.append(row)
 
