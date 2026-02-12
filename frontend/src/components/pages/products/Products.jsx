@@ -105,10 +105,12 @@ function Products() {
       document.body.appendChild(link);
       link.click();
       link.remove();
-    } catch {
-      alert("Export failed");
+    } catch (err) {
+      toast.error("Export failed");
     }
   };
+
+
 
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-6">
@@ -245,9 +247,9 @@ function Products() {
 
                         <td className="px-2 py-2 sm:px-3 sm:py-3 whitespace-nowrap">
                           <div className="flex items-center justify-center gap-1">
-                            <button className="p-1.5 sm:p-2 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200">
+                            <Link to={`/products/edit/${p.id}`} className="p-1.5 sm:p-2 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200">
                               <HiOutlinePencilAlt />
-                            </button>
+                            </Link>
                             <button className="p-1.5 sm:p-2 rounded-full bg-red-100 text-red-600 hover:bg-red-200">
                               <HiOutlineTrash />
                             </button>

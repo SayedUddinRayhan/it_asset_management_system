@@ -2,7 +2,7 @@ from rest_framework.viewsets import ModelViewSet
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from .models import Vendor, Department, Status, Category, Product, ProductDocument, TransferLog, RepairStatus, RepairLog
-from .serializers import VendorSerializer, DepartmentSerializer, StatusSerializer, CategorySerializer, ProductSerializer, TransferLogSerializer, RepairStatusSerializer, RepairLogSerializer
+from .serializers import VendorSerializer, DepartmentSerializer, StatusSerializer, CategorySerializer, ProductDocumentSerializer, ProductSerializer, TransferLogSerializer, RepairStatusSerializer, RepairLogSerializer
 from rest_framework.response import Response
 from rest_framework import status
 
@@ -86,6 +86,12 @@ class ProductViewSet(ModelViewSet):
         return Response(output_serializer.data, status=status.HTTP_201_CREATED)
 
 
+class ProductDocumentViewSet(ModelViewSet):
+    serializer_class = ProductDocumentSerializer
+
+    def get_queryset(self):
+        product_id = self.kwargs.get("product_id")
+        return ProductDocument.objects.filter(product_id=product_id).order_by("-uploaded_at")
 
 
 # Excel Export

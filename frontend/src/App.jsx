@@ -10,6 +10,7 @@ import RepairStatus from "./components/pages/RapairStatus"
 import TransferLog from "./components/pages/TransferLog"
 import RepairLog from "./components/pages/RepairLog"
 import AddProduct from "./components/pages/products/AddProduct"
+import EditProduct from "./components/pages/products/EditProduct"
 
 function App() {
   
@@ -22,6 +23,7 @@ function App() {
             <Route path="/" element={<Dashboard />} />
             <Route path="/products" element={<Products />} />
             <Route path="/products/new" element={<AddProduct />} />
+            <Route path="/products/edit/:id" element={<EditProduct />} />
             <Route path="/departments" element={<Departments />} />
             <Route path="/vendors" element={<Vendors />} />
             <Route path="/categories" element={<Categories />} />

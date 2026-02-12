@@ -373,25 +373,25 @@ function AddProduct() {
 
           {/* Submit */}
          <div className="flex justify-end items-center gap-3 md:col-span-2 mt-4">
-  {/* Cancel Button */}
-  <button
-    type="button"
-    onClick={() => navigate("/products")} // go back or reset
-    className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition"
-  >
-    Cancel
-  </button>
+            {/* Cancel Button */}
+            <button
+              type="button"
+              onClick={() => navigate("/products")}
+              className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition"
+            >
+              Cancel
+            </button>
 
-  {/* Submit Button */}
-  <button
-    type="submit"
-    disabled={loading}
-    className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm flex items-center gap-2 transition"
-  >
-    {loading && <FaSpinner className="animate-spin text-white" />}
-    {loading ? "Saving..." : "Save Product"}
-  </button>
-</div>
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm flex items-center gap-2 transition"
+            >
+              {loading && <FaSpinner className="animate-spin text-white" />}
+              {loading ? "Saving..." : "Save Product"}
+            </button>
+          </div>
         </form>
       </div>
     </div>
