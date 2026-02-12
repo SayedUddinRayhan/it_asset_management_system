@@ -3,6 +3,8 @@ import { Outlet } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false); // mobile sidebar
@@ -27,6 +29,7 @@ function Layout() {
       >
         {/* Navbar */}
         <Navbar onMobileMenuToggle={() => setSidebarOpen(!sidebarOpen)} />
+        <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop closeOnClick pauseOnHover />
 
         {/* Page Content */}
         <main className="flex-1 p-4 bg-gray-100">

@@ -4,7 +4,8 @@ import Select from "react-select";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { useNavigate } from "react-router-dom";
-import { FaFileUpload, FaFilePdf, FaFileWord, FaFile } from "react-icons/fa";
+import { FaFileUpload, FaFilePdf, FaFileWord, FaFile, FaTimes, FaSpinner } from "react-icons/fa";
+import { toast } from "react-toastify";
 
 
 function AddProduct() {
@@ -99,11 +100,10 @@ function AddProduct() {
     }
 
       await axios.post('http://127.0.0.1:8000/api/products/', data, {headers: { "Content-Type": "multipart/form-data" }});
-      alert("Product Added Successfully");
+      toast.success("Product Added Successfully");
       navigate("/products");
     } catch (err) {
-      console.error(err);
-      alert("Error adding product");
+      toast.error("Error adding product");
     } finally {
       setLoading(false);
     }
@@ -300,85 +300,98 @@ function AddProduct() {
           </div>
 
             {/* --- File Upload --- */}
-<div className="flex flex-col md:col-span-2">
-  <label className="text-sm font-medium text-gray-700 mb-2">
-    Upload Documents
-  </label>
+            <div className="flex flex-col md:col-span-2">
+              <label className="text-sm font-medium text-gray-700 mb-2">
+                Upload Documents
+              </label>
 
-  {/* Hidden file input */}
-  <input
-    type="file"
-    multiple
-    id="fileUpload"
-    className="hidden"
-    onChange={(e) => {
-      const filesArray = Array.from(e.target.files);
-      setForm({
-        ...form,
-        documents: [...(form.documents || []), ...filesArray],
-      });
-      e.target.value = "";
-    }}
-  />
+              {/* Hidden file input */}
+              <input
+                type="file"
+                multiple
+                id="fileUpload"
+                className="hidden"
+                onChange={(e) => {
+                  const filesArray = Array.from(e.target.files);
+                  setForm({
+                    ...form,
+                    documents: [...(form.documents || []), ...filesArray],
+                  });
+                  e.target.value = "";
+                }}
+              />
 
-  {/* Upload button */}
-  <button
-    type="button"
-    onClick={() => document.getElementById("fileUpload").click()}
-    className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg w-48 text-left flex items-center justify-between"
-  >
-    <span>{form.documents?.length > 0 ? `${form.documents.length} file(s)` : "Choose Files"}</span><FaFileUpload className="ml-2" />
-  </button>
+              {/* Upload button */}
+              <button
+                type="button"
+                onClick={() => document.getElementById("fileUpload").click()}
+                className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg w-48 text-left flex items-center justify-between"
+              >
+                <span>{form.documents?.length > 0 ? `${form.documents.length} file(s)` : "Choose Files"}</span><FaFileUpload className="ml-2" />
+              </button>
 
-  {/* Display selected files */}
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-3">
-    {form.documents?.map((file, idx) => (
-      <div
-        key={idx}
-        className="flex items-center justify-between bg-white border border-gray-200 rounded-lg shadow-sm p-2 hover:shadow-md transition"
-      >
-        <div className="flex items-center gap-2 overflow-hidden">
-          {/* File type icon */}
-          <span className="text-xl">
-            {file.name.endsWith(".pdf") ? <FaFilePdf className="text-red-500" /> : file.name.endsWith(".docx") || file.name.endsWith(".doc") ? <FaFileWord className="text-blue-500" /> : <FaFile className="text-gray-500" />}
-          </span>
+              {/* Display selected files */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-3">
+                {form.documents?.map((file, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between bg-white border border-gray-200 rounded-lg shadow-sm p-2 hover:shadow-md transition"
+                  >
+                    <div className="flex items-center gap-2 overflow-hidden">
+                      {/* File type icon */}
+                      <span className="text-xl">
+                        {file.name.endsWith(".pdf") ? <FaFilePdf className="text-red-500" /> : file.name.endsWith(".docx") || file.name.endsWith(".doc") ? <FaFileWord className="text-blue-500" /> : <FaFile className="text-gray-500" />}
+                      </span>
 
-          {/* File name & size */}
-          <div className="truncate text-sm">
-            <p className="truncate w-36">{file.name}</p>
-            <p className="text-gray-400 text-xs">{(file.size / 1024).toFixed(1)} KB</p>
-          </div>
-        </div>
+                      {/* File name & size */}
+                      <div className="truncate text-sm">
+                        <p className="truncate w-36">{file.name}</p>
+                        <p className="text-gray-400 text-xs">{(file.size / 1024).toFixed(1)} KB</p>
+                      </div>
+                    </div>
 
-        {/* Remove button */}
-        <button
-          type="button"
-          onClick={() =>
-            setForm({
-              ...form,
-              documents: form.documents.filter((_, i) => i !== idx),
-            })
-          }
-          className="text-red-500 hover:text-red-700 px-2 py-1 rounded-md font-semibold text-sm"
-        >
-          ✕
-        </button>
-      </div>
-    ))}
-  </div>
-</div>
+                    {/* Remove button */}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setForm({
+                          ...form,
+                          documents: form.documents.filter((_, i) => i !== idx),
+                        })
+                      }
+                      className="text-red-500 hover:text-red-700 px-2 py-1 rounded-md font-semibold text-sm"
+                    >
+                      <FaTimes />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
 
 
 
 
           {/* Submit */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="md:col-span-2 bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-xl font-medium shadow-lg transition"
-          >
-            {loading ? "Saving..." : "Add Product"}
-          </button>
+         <div className="flex justify-end items-center gap-3 md:col-span-2 mt-4">
+  {/* Cancel Button */}
+  <button
+    type="button"
+    onClick={() => navigate("/products")} // go back or reset
+    className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition"
+  >
+    Cancel
+  </button>
+
+  {/* Submit Button */}
+  <button
+    type="submit"
+    disabled={loading}
+    className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm flex items-center gap-2 transition"
+  >
+    {loading && <FaSpinner className="animate-spin text-white" />}
+    {loading ? "Saving..." : "Save Product"}
+  </button>
+</div>
         </form>
       </div>
     </div>
