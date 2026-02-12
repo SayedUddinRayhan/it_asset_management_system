@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Vendor, Department, Status, Category, Product, TransferLog, RepairStatus, RepairLog
+from .models import ProductDocument, Vendor, Department, Status, Category, Product, TransferLog, RepairStatus, RepairLog
 
 @admin.register(Vendor)
 class VendorAdmin(admin.ModelAdmin):
@@ -32,6 +32,12 @@ class CategoryAdmin(admin.ModelAdmin):
     list_filter = ("is_active",)
     readonly_fields = ('slug',)
     ordering = ("name",)
+
+@admin.register(ProductDocument)
+class ProductDocumentAdmin(admin.ModelAdmin):
+    list_display = ("product", "file", "uploaded_at")
+    search_fields = ("product__name", "file")
+    ordering = ("-uploaded_at",)
 
 
 @admin.register(Product)

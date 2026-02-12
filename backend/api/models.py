@@ -48,19 +48,18 @@ class Category(models.Model):
 
 class Product(models.Model):
     name = models.CharField(max_length=200)
-    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
-    vendor = models.ForeignKey(Vendor, on_delete=models.SET_NULL, null=True)
-    current_department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True)
+    category = models.ForeignKey(Category, on_delete=models.PROTECT)
+    vendor = models.ForeignKey(Vendor, on_delete=models.PROTECT)
+    current_department = models.ForeignKey(Department, on_delete=models.PROTECT)
     model_number = models.CharField(max_length=200, blank=True)
     serial_number = models.CharField(max_length=200, blank=True)
     description = models.TextField(blank=True)
     purchase_date = models.DateField(null=True, blank=True)
     warranty_years = models.PositiveIntegerField(null=True, blank=True) 
     warranty_end_date = models.DateField(null=True, blank=True)
-    quantity = models.PositiveIntegerField(default=0)
+    quantity = models.PositiveIntegerField()
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    status = models.ForeignKey(Status, on_delete=models.SET_NULL, null=True)
-    documents = models.FileField(upload_to="docs/", null=True, blank=True)
+    status = models.ForeignKey(Status, on_delete=models.PROTECT)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -73,6 +72,13 @@ class Product(models.Model):
     def __str__(self):
         return self.name
 
+class ProductDocument(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="documents")
+    file = models.FileField(upload_to="docs/")
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.product.name} - {self.file.name}"
 
 class TransferLog(models.Model):
     product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True)

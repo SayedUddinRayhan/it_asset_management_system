@@ -1,8 +1,10 @@
 from rest_framework.viewsets import ModelViewSet
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
-from .models import Vendor, Department, Status, Category, Product, TransferLog, RepairStatus, RepairLog
+from .models import Vendor, Department, Status, Category, Product, ProductDocument, TransferLog, RepairStatus, RepairLog
 from .serializers import VendorSerializer, DepartmentSerializer, StatusSerializer, CategorySerializer, ProductSerializer, TransferLogSerializer, RepairStatusSerializer, RepairLogSerializer
+from rest_framework.response import Response
+from rest_framework import status
 
 import io
 import pandas as pd
@@ -57,7 +59,7 @@ class CategoryViewSet(ModelViewSet):
 class ProductViewSet(ModelViewSet):
     queryset = Product.objects.filter(is_active=True).select_related(
         "vendor", "current_department", "status"
-    ).order_by("-created_at")
+    ).prefetch_related("documents").order_by("-created_at")
     serializer_class = ProductSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ["status", "category", "current_department"]
@@ -67,6 +69,22 @@ class ProductViewSet(ModelViewSet):
     def perform_destroy(self, instance):
         instance.is_active = False
         instance.save(update_fields=["is_active"])
+
+    def create(self, request, *args, **kwargs):
+        files = request.FILES.getlist("documents")
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        product = serializer.save()
+
+        for f in files:
+            ProductDocument.objects.create(product=product, file=f)
+
+        # re-serialize
+        output_serializer = self.get_serializer(product)
+
+        return Response(output_serializer.data, status=status.HTTP_201_CREATED)
+
 
 
 

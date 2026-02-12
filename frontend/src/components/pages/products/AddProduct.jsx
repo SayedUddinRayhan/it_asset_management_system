@@ -23,7 +23,7 @@ function AddProduct() {
     quantity: 0,
     price: 0,
     status: "",
-    documents: null,
+    documents: [],
   });
 
   const [categories, setCategories] = useState([]);
@@ -60,7 +60,7 @@ function AddProduct() {
 
   const handleInput = (e) => {
     const { name, value, files } = e.target;
-    setForm({ ...form, [name]: files ? files[0] : value });
+    setForm({ ...form, [name]: files ? files[0] : name === "status" ? parseInt(value) : value });
   };
 
   const handleSelect = (name, value) => {
@@ -91,12 +91,16 @@ function AddProduct() {
       data.append("quantity", form.quantity);
       data.append("price", form.price);
       data.append("status", form.status);
-      if (form.documents) data.append("documents", form.documents);
+      
+      if (form.documents) {
+        form.documents.forEach((file) => {
+        data.append("documents", file);
+    });
+    }
 
-      await axios.post(`${API}/products/`, data);
-
+      await axios.post('http://127.0.0.1:8000/api/products/', data, {headers: { "Content-Type": "multipart/form-data" }});
       alert("Product Added Successfully");
-      navigate("/products"); // redirect to products page
+      navigate("/products");
     } catch (err) {
       console.error(err);
       alert("Error adding product");
@@ -166,6 +170,7 @@ function AddProduct() {
             </label>
             <Select
               placeholder="Select Category"
+              required
               options={categories}
               value={form.category}
               onChange={(v) => handleSelect("category", v)}
@@ -179,6 +184,7 @@ function AddProduct() {
             </label>
             <Select
               placeholder="Select Vendor"
+              required
               options={vendors}
               value={form.vendor}
               onChange={(v) => handleSelect("vendor", v)}
@@ -192,6 +198,7 @@ function AddProduct() {
             </label>
             <Select
               placeholder="Select Department"
+              required
               options={departments}
               value={form.current_department}
               onChange={(v) => handleSelect("current_department", v)}
@@ -205,6 +212,7 @@ function AddProduct() {
             </label>
             <select
               name="status"
+              required
               className={inputStyle}
               onChange={handleInput}
             >
@@ -255,6 +263,7 @@ function AddProduct() {
             <input
               type="number"
               name="quantity"
+              required
               placeholder="Quantity"
               className={inputStyle}
               onChange={handleInput}
