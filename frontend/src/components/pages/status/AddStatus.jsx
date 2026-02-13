@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import { FaSpinner, FaTrash, FaEdit, FaSave, FaTimes, FaSearch } from "react-icons/fa";
+import { FaSpinner, FaSave, FaTimes, FaSearch } from "react-icons/fa";
+import { HiOutlinePencilAlt, HiOutlineTrash } from "react-icons/hi";
 
 function AddStatus() {
   const navigate = useNavigate();
@@ -215,15 +216,15 @@ function AddStatus() {
                       <>
                         <button
                           onClick={() => handleEdit(s.id, s.name)}
-                          className="text-blue-500 hover:text-blue-700 focus:ring-2 focus:ring-blue-300 px-2 py-1 rounded-md text-xs font-medium"
+                          className="p-1.5 sm:p-2 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200"
                         >
-                          <FaEdit />
+                          <HiOutlinePencilAlt />
                         </button>
                         <button
                           onClick={() => handleDelete(s.id)}
-                          className="text-red-500 hover:text-red-700 focus:ring-2 focus:ring-red-300 px-2 py-1 rounded-md text-xs font-medium"
+                          className="p-1.5 sm:p-2 rounded-full bg-red-100 text-red-600 hover:bg-red-200"
                         >
-                          <FaTrash />
+                          <HiOutlineTrash />
                         </button>
                       </>
                     )}
