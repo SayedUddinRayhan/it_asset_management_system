@@ -81,7 +81,7 @@ function Navbar({ onMobileMenuToggle }) {
           </div>
           <button
             onClick={() => navigate("/search")}
-            className="bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 flex-shrink-0"
+            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm flex items-center gap-2 transition"
           >
             Search
           </button>
