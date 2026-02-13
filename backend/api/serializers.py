@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from .models import Vendor, Department, Status, Category, Product, ProductDocument, TransferLog, RepairStatus, RepairLog
 
-
 class VendorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Vendor
@@ -37,6 +36,7 @@ class ProductSerializer(serializers.ModelSerializer):
     category_name = serializers.CharField(source='category.name', read_only=True)
     status_name = serializers.CharField(source='status.name', read_only=True)
     documents = ProductDocumentSerializer(many=True, read_only=True)
+    status = serializers.PrimaryKeyRelatedField(queryset=Status.objects.all(), required=False)
     
     class Meta:
         model = Product
@@ -44,7 +44,12 @@ class ProductSerializer(serializers.ModelSerializer):
                   'warranty_end_date', 'quantity', 'price', 'vendor', 'current_department', 'category', 
                   'status', 'created_at', 'updated_at',
                   'vendor_name', 'department_name', 'category_name', 'status_name', 'documents']
-        
+
+   # Prevent status changes when editing from "Edit Product" form
+    def update(self, instance, validated_data):
+        validated_data.pop("status", None)  # ignore status updates
+        return super().update(instance, validated_data)
+            
 
 
 class TransferLogSerializer(serializers.ModelSerializer):

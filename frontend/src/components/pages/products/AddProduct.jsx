@@ -21,16 +21,14 @@ function AddProduct() {
     description: "",
     purchase_date: null,
     warranty_years: "",
-    quantity: 0,
-    price: 0,
-    status: "",
+    quantity: 1,
+    price: "",
     documents: [],
   });
 
   const [categories, setCategories] = useState([]);
   const [vendors, setVendors] = useState([]);
   const [departments, setDepartments] = useState([]);
-  const [statuses, setStatuses] = useState([]);
 
   const [loading, setLoading] = useState(false);
 
@@ -47,13 +45,11 @@ function AddProduct() {
         axios.get('http://127.0.0.1:8000/api/categories/'),
         axios.get('http://127.0.0.1:8000/api/vendors/'),
         axios.get('http://127.0.0.1:8000/api/departments/'),
-        axios.get('http://127.0.0.1:8000/api/statuses/'),
       ]);
 
       setCategories(mapOptions(cat.data.results));
       setVendors(mapOptions(ven.data.results));
       setDepartments(mapOptions(dep.data.results));
-      setStatuses(stat.data.results);
     } catch (err) {
       console.error(err);
     }
@@ -61,7 +57,7 @@ function AddProduct() {
 
   const handleInput = (e) => {
     const { name, value, files } = e.target;
-    setForm({ ...form, [name]: files ? files[0] : name === "status" ? parseInt(value) : value });
+    setForm({ ...form, [name]: files ? files[0] : value });
   };
 
   const handleSelect = (name, value) => {
@@ -91,7 +87,6 @@ function AddProduct() {
       data.append("warranty_years", form.warranty_years);
       data.append("quantity", form.quantity);
       data.append("price", form.price);
-      data.append("status", form.status);
       
       if (form.documents) {
         form.documents.forEach((file) => {
@@ -205,26 +200,6 @@ function AddProduct() {
             />
           </div>
 
-          {/* Status */}
-          <div className="flex flex-col">
-            <label className="text-sm font-medium text-gray-700 mb-1">
-              Status
-            </label>
-            <select
-              name="status"
-              required
-              className={inputStyle}
-              onChange={handleInput}
-            >
-              <option value="">Select Status</option>
-              {statuses.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
          
 
           {/* Purchase Date */}
@@ -263,9 +238,11 @@ function AddProduct() {
             <input
               type="number"
               name="quantity"
+              min={1}
               required
               placeholder="Quantity"
               className={inputStyle}
+              defaultValue={1}
               onChange={handleInput}
             />
           </div>
@@ -277,7 +254,6 @@ function AddProduct() {
             </label>
             <input
               type="number"
-              step="0.01"
               name="price"
               placeholder="Price"
               className={inputStyle}

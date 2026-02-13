@@ -5,7 +5,8 @@ import Products from "./components/pages/products/Products"
 import Departments from "./components/pages/Departments"
 import Vendors from "./components/pages/Vendors"
 import Categories from "./components/pages/Categories"
-import Status from "./components/pages/Status"
+import AddStatus from "./components/pages/status/AddStatus"
+import ChangeStatus from "./components/pages/status/ChangeStatus"
 import RepairStatus from "./components/pages/RapairStatus" 
 import TransferLog from "./components/pages/TransferLog"
 import RepairLog from "./components/pages/RepairLog"
@@ -27,7 +28,8 @@ function App() {
             <Route path="/departments" element={<Departments />} />
             <Route path="/vendors" element={<Vendors />} />
             <Route path="/categories" element={<Categories />} />
-            <Route path="/statuses" element={<Status />} />
+            <Route path="/statuses/add" element={<AddStatus />} />
+            <Route path="/statuses/change" element={<ChangeStatus />} />
             <Route path="/repair-statuses" element={<RepairStatus />} />
             <Route path="/transfers" element={<TransferLog />} />
             <Route path="/repairs" element={<RepairLog />} />

@@ -75,7 +75,10 @@ class ProductViewSet(ModelViewSet):
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        product = serializer.save()
+
+        in_use_status, _ = Status.objects.get_or_create(name="In Stock")
+        product = serializer.save(status=in_use_status)
+
 
         for f in files:
             ProductDocument.objects.create(product=product, file=f)
@@ -84,6 +87,20 @@ class ProductViewSet(ModelViewSet):
         output_serializer = self.get_serializer(product)
 
         return Response(output_serializer.data, status=status.HTTP_201_CREATED)
+    
+    def partial_update(self, request, *args, **kwargs):
+        product = self.get_object()
+        status_id = request.data.get("status")
+
+        if status_id:
+            try:
+                new_status = Status.objects.get(id=status_id)
+                product.status = new_status
+                product.save(update_fields=["status"])
+            except Status.DoesNotExist:
+                return Response({"error": "Invalid status"}, status=status.HTTP_400_BAD_REQUEST)
+
+        return super().partial_update(request, *args, **kwargs)
 
 
 class ProductDocumentViewSet(ModelViewSet):

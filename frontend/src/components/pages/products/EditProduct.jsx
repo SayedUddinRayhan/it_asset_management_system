@@ -23,7 +23,6 @@ function EditProduct() {
     warranty_years: "",
     quantity: 0,
     price: 0,
-    status: null,
     documents: [],
   });
 
@@ -31,7 +30,6 @@ function EditProduct() {
   const [categories, setCategories] = useState([]);
   const [vendors, setVendors] = useState([]);
   const [departments, setDepartments] = useState([]);
-  const [statuses, setStatuses] = useState([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -48,13 +46,11 @@ function EditProduct() {
         axios.get("http://127.0.0.1:8000/api/categories/"),
         axios.get("http://127.0.0.1:8000/api/vendors/"),
         axios.get("http://127.0.0.1:8000/api/departments/"),
-        axios.get("http://127.0.0.1:8000/api/statuses/"),
       ]);
 
       setCategories(mapOptions(cat.data.results));
       setVendors(mapOptions(ven.data.results));
       setDepartments(mapOptions(dep.data.results));
-      setStatuses(mapOptions(stat.data.results));
     } catch (err) {
       console.error(err);
     }
@@ -79,7 +75,6 @@ function EditProduct() {
         warranty_years: p.warranty_years,
         quantity: p.quantity,
         price: p.price,
-        status: p.status ? { value: p.status, label: p.status_name } : null,
         documents: [],
       });
 
@@ -102,8 +97,8 @@ function EditProduct() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!form.category || !form.vendor || !form.current_department || !form.status) {
-      alert("Category, Vendor, Department and Status are required");
+    if (!form.category || !form.vendor || !form.current_department) {
+      alert("Category, Vendor, and Department are required");
       return;
     }
 
@@ -125,7 +120,6 @@ function EditProduct() {
       data.append("warranty_years", form.warranty_years);
       data.append("quantity", form.quantity);
       data.append("price", form.price);
-      data.append("status", form.status.value);
 
 
       form.documents.forEach((file) => data.append("documents", file));
@@ -206,16 +200,6 @@ function EditProduct() {
             />
           </div>
 
-          {/* Status */}
-          <div className="flex flex-col">
-            <label className="text-sm font-medium text-gray-700 mb-1">Status</label>
-            <Select
-              placeholder="Select Status"
-              options={statuses}
-              value={form.status}
-              onChange={(v) => handleSelect("status", v)}
-            />
-          </div>
 
           {/* Quantity */}
           <div className="flex flex-col">

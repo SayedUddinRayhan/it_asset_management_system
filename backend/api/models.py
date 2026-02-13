@@ -57,7 +57,7 @@ class Product(models.Model):
     purchase_date = models.DateField(null=True, blank=True)
     warranty_years = models.PositiveIntegerField(null=True, blank=True) 
     warranty_end_date = models.DateField(null=True, blank=True)
-    quantity = models.PositiveIntegerField()
+    quantity = models.PositiveIntegerField(default=1)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     status = models.ForeignKey(Status, on_delete=models.PROTECT)
     is_active = models.BooleanField(default=True)

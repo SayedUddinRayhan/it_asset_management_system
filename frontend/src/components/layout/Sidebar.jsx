@@ -1,7 +1,10 @@
 import { NavLink } from "react-router-dom";
-import { FaTachometerAlt, FaBoxOpen, FaStore, FaSitemap, FaTags, FaExchangeAlt, FaTools, FaBars, FaListAlt, FaClipboardCheck, FaHistory } from "react-icons/fa";
+import { useState } from "react";
+import { FaTachometerAlt, FaBoxOpen, FaStore, FaSitemap, FaTags, FaExchangeAlt, FaTools, FaBars, FaListAlt, FaChevronDown, FaClipboardCheck } from "react-icons/fa";
 
 function Sidebar({ sidebarOpen, setSidebarOpen, sidebarCollapsed, setSidebarCollapsed }) {
+  const [openMenu, setOpenMenu] = useState(null);
+
   const menuItems = [
     { name: "Dashboard", path: "/", icon: FaTachometerAlt },
     { name: "Products", path: "/products", icon: FaBoxOpen },
@@ -10,7 +13,14 @@ function Sidebar({ sidebarOpen, setSidebarOpen, sidebarCollapsed, setSidebarColl
     { name: "Categories", path: "/categories", icon: FaTags },
     { name: "Transfers", path: "/transfers", icon: FaExchangeAlt },
     { name: "Repairs", path: "/repairs", icon: FaTools },
-    { name: "Statuses", path: "/statuses", icon: FaListAlt },
+    {
+      name: "Statuses",
+      icon: FaListAlt,
+      submenu: [
+        { name: "Add Status", path: "/statuses/add" },
+        { name: "Change Status", path: "/statuses/change" },
+      ],
+    },
     { name: "Repair Statuses", path: "/repair-statuses", icon: FaClipboardCheck },
   ];
 
@@ -27,10 +37,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen, sidebarCollapsed, setSidebarColl
       {/* Logo + Toggle */}
       <div className="flex items-center justify-between px-4 py-4 border-b border-gray-700">
         {!sidebarCollapsed && <h1 className="text-lg font-semibold tracking-wide">IT Assets</h1>}
-        <button
-          onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-          className="p-2 rounded hover:bg-gray-700"
-        >
+        <button onClick={() => setSidebarCollapsed(!sidebarCollapsed)} className="p-2 rounded hover:bg-gray-700">
           <FaBars />
         </button>
       </div>
@@ -39,19 +46,57 @@ function Sidebar({ sidebarOpen, setSidebarOpen, sidebarCollapsed, setSidebarColl
       <nav className="flex-1 px-2 py-4 space-y-2">
         {menuItems.map((item, idx) => {
           const Icon = item.icon;
+          const hasSubmenu = !!item.submenu;
+
           return (
-            <NavLink
-              key={idx}
-              to={item.path}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2 rounded-lg transition-all
-                ${isActive ? "bg-blue-600 text-white" : "text-gray-300 hover:bg-gray-700 hover:text-white"}`
-              }
-              onClick={() => setSidebarOpen(false)} // close mobile sidebar
-            >
-              <Icon className="w-5 h-5" />
-              {!sidebarCollapsed && <span className="text-sm">{item.name}</span>}
-            </NavLink>
+            <div key={idx} className="relative">
+              {/* Top-level navigation */}
+              {hasSubmenu ? (
+                <button
+                  onClick={() => setOpenMenu(openMenu === idx ? null : idx)}
+                  className={`flex items-center justify-between w-full gap-3 px-3 py-2 rounded-lg transition-all
+                    ${openMenu === idx ? "bg-blue-600 text-white" : "text-gray-300 hover:bg-gray-700 hover:text-white"}
+                  `}
+                >
+                  <div className="flex items-center gap-3">
+                    {Icon && <Icon className="w-5 h-5" />}
+                    {!sidebarCollapsed && <span className="text-sm">{item.name}</span>}
+                  </div>
+                  {!sidebarCollapsed && <FaChevronDown className={`transition-transform ${openMenu === idx ? "rotate-180" : ""}`} />}
+                </button>
+              ) : (
+                <NavLink
+                  to={item.path}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-3 py-2 rounded-lg transition-all
+                    ${isActive ? "bg-blue-600 text-white" : "text-gray-300 hover:bg-gray-700 hover:text-white"}`
+                  }
+                  onClick={() => setSidebarOpen(false)}
+                >
+                  {Icon && <Icon className="w-5 h-5" />}
+                  {!sidebarCollapsed && <span className="text-sm">{item.name}</span>}
+                </NavLink>
+              )}
+
+              {/* Submenu */}
+              {hasSubmenu && openMenu === idx && !sidebarCollapsed && (
+                <div className="ml-6 mt-1 flex flex-col space-y-1">
+                  {item.submenu.map((sub, sIdx) => (
+                    <NavLink
+                      key={sIdx}
+                      to={sub.path}
+                      className={({ isActive }) =>
+                        `px-3 py-2 rounded-lg text-sm transition-all
+                        ${isActive ? "bg-blue-500 text-white" : "text-gray-300 hover:bg-gray-700 hover:text-white"}`
+                      }
+                      onClick={() => setSidebarOpen(false)}
+                    >
+                      {sub.name}
+                    </NavLink>
+                  ))}
+                </div>
+              )}
+            </div>
           );
         })}
       </nav>

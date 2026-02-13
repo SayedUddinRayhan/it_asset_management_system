@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-function Status() {
+function AddStatus() {
   const [statuses, setStatuses] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -41,4 +41,4 @@ function Status() {
   );
 }
 
-export default Status;
+export default AddStatus;

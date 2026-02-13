@@ -4,6 +4,7 @@ import axios from "axios";
 import Select from "react-select";
 import { HiOutlinePencilAlt, HiOutlineTrash } from "react-icons/hi";
 import { FaPlus } from "react-icons/fa";
+import { toast } from "react-toastify";
 
 function Products() {
   const [products, setProducts] = useState([]);
@@ -109,6 +110,31 @@ function Products() {
       toast.error("Export failed");
     }
   };
+
+  const handleDelete = async (id) => {
+  if (!window.confirm("Are you sure you want to delete this product?")) return;
+
+  const previousProducts = products;
+  setProducts(products.filter(p => p.id !== id));
+
+  try {
+    await axios.delete(`http://127.0.0.1:8000/api/products/${id}/`);
+    toast.success("Product deleted successfully");
+
+
+    if (products.length === 1 && page > 1) {
+      setPage(prev => prev - 1);
+    } else {
+      fetchProducts(page);
+    }
+
+  } catch (error) {
+    setProducts(previousProducts);
+    toast.error("Failed to delete product");
+  }
+};
+
+
 
 
 
@@ -250,7 +276,7 @@ function Products() {
                             <Link to={`/products/edit/${p.id}`} className="p-1.5 sm:p-2 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200">
                               <HiOutlinePencilAlt />
                             </Link>
-                            <button className="p-1.5 sm:p-2 rounded-full bg-red-100 text-red-600 hover:bg-red-200">
+                            <button onClick={() => handleDelete(p.id)} className="p-1.5 sm:p-2 rounded-full bg-red-100 text-red-600 hover:bg-red-200">
                               <HiOutlineTrash />
                             </button>
                           </div>
