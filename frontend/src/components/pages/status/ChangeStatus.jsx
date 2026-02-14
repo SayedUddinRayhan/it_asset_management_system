@@ -214,7 +214,7 @@ function ChangeStatus() {
            <table className="min-w-full border border-gray-200 divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 border-b text-left text-sm font-medium text-gray-700">SL</th>
+                  <th className="px-6 py-3 border-b text-left text-sm font-medium text-gray-700 w-[80px]">SL</th>
                   <th className="px-6 py-3 border-b text-left text-sm font-medium text-gray-700">Product</th>
                   <th className="px-6 py-3 border-b text-left text-sm font-medium text-gray-700">Category</th>
                   <th className="px-6 py-3 border-b text-left text-sm font-medium text-gray-700">Current Status</th>

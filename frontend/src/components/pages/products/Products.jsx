@@ -226,24 +226,24 @@ function Products() {
                 <table className="min-w-full text-[11px] sm:text-sm table-auto min-w-[900px] border border-gray-200 divide-y divide-gray-200">
                   <thead className="bg-gray-50 border-b">
                     <tr className="text-left text-gray-600">
-                      <th className="px-2 py-2 border-b sm:px-3 sm:py-3 w-[30px]">SL</th>
-                      <th className="px-2 py-2 border-b sm:px-3 sm:py-3">Name</th>
-                      <th className="hidden border-b sm:table-cell px-2 py-2 sm:px-3 sm:py-3">Category</th>
-                      <th className="hidden border-b md:table-cell px-2 py-2 sm:px-3 sm:py-3">Department</th>
-                      <th className="hidden border-b lg:table-cell px-2 py-2 sm:px-3 sm:py-3">Vendor</th>
-                      <th className="px-2 py-2 border-b sm:px-3 sm:py-3 w-[80px]">Price</th>
-                      <th className="px-1 py-2 border-b sm:px-2 sm:py-3 w-[70px]">Purchase</th>
-                      <th className="hidden border-b sm:table-cell px-1 py-2 sm:px-2 sm:py-3 w-[60px]">Warranty</th>
-                      <th className="hidden border-b md:table-cell px-1 py-2 sm:px-2 sm:py-3 w-[70px]">End</th>
-                      <th className="px-2 py-2 border-b sm:px-3 sm:py-3 w-[70px]">Status</th>
-                      <th className="px-2 py-2 border-b sm:px-3 sm:py-3 text-center w-[80px]">Actions</th>
+                      <th className="px- py-3 border-b sm:px-3 sm:py-3 w-[40px]">SL</th>
+                      <th className="px-2 py-3 border-b sm:px-3 sm:py-3">Name</th>
+                      <th className="hidden border-b sm:table-cell px-2 py-3 sm:px-3 sm:py-3">Category</th>
+                      <th className="hidden border-b md:table-cell px-2 py-3 sm:px-3 sm:py-3">Department</th>
+                      <th className="hidden border-b lg:table-cell px-2 py-3 sm:px-3 sm:py-3">Vendor</th>
+                      <th className="px-2 py-3 border-b sm:px-3 sm:py-3 w-[80px]">Price</th>
+                      <th className="px-1 py-3 border-b sm:px-2 sm:py-3 w-[70px]">Purchase</th>
+                      <th className="hidden border-b sm:table-cell px-1 py-3 sm:px-2 sm:py-3 w-[60px]">Warranty</th>
+                      <th className="hidden border-b md:table-cell px-1 py-3 sm:px-2 sm:py-3 w-[70px]">End</th>
+                      <th className="px-2 py-3 border-b sm:px-3 sm:py-3 w-[70px]">Status</th>
+                      <th className="px-2 py-3 border-b sm:px-3 sm:py-3 text-center w-[80px]">Actions</th>
                     </tr>
                   </thead>
 
                   <tbody className="bg-white divide-y divide-gray-200">
                     {products.map((p, index) => (
                       <tr key={p.id} className="hover:bg-gray-50">
-                        <td className="px-2 py-2 sm:px-3 sm:py-3 text-center">{(page - 1) * 10 + index + 1}</td>
+                        <td className="px-2 py-2 sm:px-3 sm:py-3 text-left">{(page - 1) * 10 + index + 1}</td>
 
                         {/* Name / Category / Department: wrap after 30 chars */}
                         <td className="px-2 py-2 sm:px-3 sm:py-3">
