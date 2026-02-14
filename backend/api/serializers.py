@@ -47,7 +47,7 @@ class ProductSerializer(serializers.ModelSerializer):
 
    # Prevent status changes when editing from "Edit Product" form
     def update(self, instance, validated_data):
-        validated_data.pop("status", None)  # ignore status updates
+        validated_data.pop("status", None)  
         return super().update(instance, validated_data)
             
 

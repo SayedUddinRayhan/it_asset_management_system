@@ -3,7 +3,6 @@ import { FaRegUserCircle, FaCog, FaPowerOff, FaSearch } from "react-icons/fa";
 import { HiChevronDown, HiOutlineMenu } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
 
-
 function Navbar({ onMobileMenuToggle }) {
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
@@ -27,13 +26,13 @@ function Navbar({ onMobileMenuToggle }) {
     const dayName = days[date.getDay()];
     const day = date.getDate();
     const month = months[date.getMonth()];
-    const year = String(date.getFullYear()).slice(-2); // last 2 digits
+    const year = String(date.getFullYear()).slice(-2);
 
     let hours = date.getHours();
     const minutes = String(date.getMinutes()).padStart(2, "0");
     const seconds = String(date.getSeconds()).padStart(2, "0");
     const ampm = hours >= 12 ? "PM" : "AM";
-    hours = hours % 12 || 12; // convert 0 to 12
+    hours = hours % 12 || 12;
 
     return `${dayName}, ${day}-${month}-${year} ${hours}:${minutes}:${seconds} ${ampm}`;
   };
@@ -50,27 +49,27 @@ function Navbar({ onMobileMenuToggle }) {
   }, []);
 
   return (
-    <nav className="bg-white shadow-md px-4 py-3 flex items-center justify-between relative w-full">
+    <nav className="bg-white shadow-md px-4 py-3 flex items-center justify-between relative">
 
       {/* Left: Mobile Menu + Logo */}
-      <div className="flex items-center gap-3 min-w-0 flex-1 sm:flex-[1_1_auto]">
+      <div className="flex items-center gap-3 flex-shrink-0 min-w-0">
         <button
-          className="lg:hidden p-2 rounded hover:bg-gray-200 flex-shrink-0"
+          className="lg:hidden p-2 rounded hover:bg-gray-200"
           onClick={onMobileMenuToggle}
         >
           <HiOutlineMenu className="w-6 h-6 text-gray-700" />
         </button>
 
-        <span className="text-gray-500 font-semibold truncate text-sm sm:text-base md:text-lg lg:text-lg">
-          {formatDateTime(currentTime)}
+        <span className="text-gray-800 font-bold truncate text-sm sm:text-base md:text-lg lg:text-xl flex-shrink-0">
+        {formatDateTime(currentTime)}
         </span>
       </div>
 
       {/* Right: Search + Profile */}
       <div className="flex items-center gap-2 flex-1 min-w-0 justify-end">
 
-        {/* Desktop & Tablet Search */}
-        <div className="hidden sm:flex gap-2 items-center max-w-full lg:max-w-sm flex-shrink">
+        {/* Desktop & Tablet Search Input */}
+        <div className="hidden sm:flex gap-2 items-center max-w-[50%] lg:max-w-sm flex-shrink-0">
           <div className="relative flex-1 min-w-0">
             <input
               type="text"
@@ -81,7 +80,7 @@ function Navbar({ onMobileMenuToggle }) {
           </div>
           <button
             onClick={() => navigate("/search")}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm flex items-center gap-2 transition"
+            className="flex-shrink-0 bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700"
           >
             Search
           </button>
@@ -95,8 +94,8 @@ function Navbar({ onMobileMenuToggle }) {
           <FaSearch className="w-5 h-5 text-gray-700" />
         </button>
 
-        {/* Profile */}
-        <div className="relative ml-2" ref={profileRef}>
+        {/* Profile Dropdown */}
+        <div className="relative ml-2 flex-shrink-0" ref={profileRef}>
           <button
             className="flex items-center gap-2 rounded-full border border-gray-300 px-2 py-1 hover:bg-gray-100"
             onClick={() => setProfileOpen(!profileOpen)}
@@ -139,7 +138,6 @@ function Navbar({ onMobileMenuToggle }) {
         </div>
       )}
     </nav>
-
   );
 }
 

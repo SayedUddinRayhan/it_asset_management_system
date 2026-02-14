@@ -137,13 +137,12 @@ function Products() {
 
 
 
-
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-6">
+    <div className="max-w-8xl mx-auto p-6 space-y-6">
       <div className="bg-white shadow-xl rounded-2xl p-6">
           {/* HEADER */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div>
+            <div className="space-y-6">
               <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
                 Products
               </h1>
@@ -224,26 +223,26 @@ function Products() {
               {loading ? (
                 <p className="p-6 text-center">Loading...</p>
               ) : (
-                <table className="w-full text-[11px] sm:text-sm table-auto min-w-[900px]">
+                <table className="min-w-full text-[11px] sm:text-sm table-auto min-w-[900px] border border-gray-200 divide-y divide-gray-200">
                   <thead className="bg-gray-50 border-b">
                     <tr className="text-left text-gray-600">
-                      <th className="px-2 py-2 sm:px-3 sm:py-3 w-[30px]">SL</th>
-                      <th className="px-2 py-2 sm:px-3 sm:py-3">Name</th>
-                      <th className="hidden sm:table-cell px-2 py-2 sm:px-3 sm:py-3">Category</th>
-                      <th className="hidden md:table-cell px-2 py-2 sm:px-3 sm:py-3">Department</th>
-                      <th className="hidden lg:table-cell px-2 py-2 sm:px-3 sm:py-3">Vendor</th>
-                      <th className="px-2 py-2 sm:px-3 sm:py-3 w-[80px]">Price</th>
-                      <th className="px-1 py-2 sm:px-2 sm:py-3 w-[70px]">Purchase</th>
-                      <th className="hidden sm:table-cell px-1 py-2 sm:px-2 sm:py-3 w-[60px]">Warranty</th>
-                      <th className="hidden md:table-cell px-1 py-2 sm:px-2 sm:py-3 w-[70px]">End</th>
-                      <th className="px-2 py-2 sm:px-3 sm:py-3 w-[70px]">Status</th>
-                      <th className="px-2 py-2 sm:px-3 sm:py-3 text-center w-[80px]">Actions</th>
+                      <th className="px-2 py-2 border-b sm:px-3 sm:py-3 w-[30px]">SL</th>
+                      <th className="px-2 py-2 border-b sm:px-3 sm:py-3">Name</th>
+                      <th className="hidden border-b sm:table-cell px-2 py-2 sm:px-3 sm:py-3">Category</th>
+                      <th className="hidden border-b md:table-cell px-2 py-2 sm:px-3 sm:py-3">Department</th>
+                      <th className="hidden border-b lg:table-cell px-2 py-2 sm:px-3 sm:py-3">Vendor</th>
+                      <th className="px-2 py-2 border-b sm:px-3 sm:py-3 w-[80px]">Price</th>
+                      <th className="px-1 py-2 border-b sm:px-2 sm:py-3 w-[70px]">Purchase</th>
+                      <th className="hidden border-b sm:table-cell px-1 py-2 sm:px-2 sm:py-3 w-[60px]">Warranty</th>
+                      <th className="hidden border-b md:table-cell px-1 py-2 sm:px-2 sm:py-3 w-[70px]">End</th>
+                      <th className="px-2 py-2 border-b sm:px-3 sm:py-3 w-[70px]">Status</th>
+                      <th className="px-2 py-2 border-b sm:px-3 sm:py-3 text-center w-[80px]">Actions</th>
                     </tr>
                   </thead>
 
-                  <tbody>
+                  <tbody className="bg-white divide-y divide-gray-200">
                     {products.map((p, index) => (
-                      <tr key={p.id} className="border-t hover:bg-gray-50">
+                      <tr key={p.id} className="hover:bg-gray-50">
                         <td className="px-2 py-2 sm:px-3 sm:py-3 text-center">{(page - 1) * 10 + index + 1}</td>
 
                         {/* Name / Category / Department: wrap after 30 chars */}

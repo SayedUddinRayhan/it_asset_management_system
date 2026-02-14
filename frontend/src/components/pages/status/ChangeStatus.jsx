@@ -3,65 +3,77 @@ import axios from "axios";
 import Select from "react-select";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
-import { FaSpinner, FaSearch } from "react-icons/fa";
+import { FaSpinner, FaSearch, FaSave } from "react-icons/fa";
 
 function ChangeStatus() {
   const navigate = useNavigate();
   const location = useLocation();
 
   const [form, setForm] = useState({ product: null, status: null });
-  const [products, setProducts] = useState([]);
   const [statuses, setStatuses] = useState([]);
+  const [products, setProducts] = useState([]);
   const [productDetails, setProductDetails] = useState(null);
-  const [allProducts, setAllProducts] = useState([]);
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
   const [searchTerm, setSearchTerm] = useState("");
+
+  // Pagination
+  const [page, setPage] = useState(1);
+  const [count, setCount] = useState(0);
+  const pageSize = 10;
 
   const API = "http://127.0.0.1:8000/api";
 
   const inputStyle =
     "border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none w-full text-sm";
 
-  // ---------- Fetch dropdowns and all products ----------
+  // ---------- Fetch statuses ----------
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
+    const fetchStatuses = async () => {
       try {
-        const [prodRes, statusRes] = await Promise.all([
-          axios.get(`${API}/products/`),
-          axios.get(`${API}/statuses/`),
-        ]);
-
-        const productOptions = prodRes.data.results.map((p) => ({
-          value: p.id,
-          label: p.name,
-        }));
-        setProducts(productOptions);
-        setAllProducts(prodRes.data.results);
-
-        const statusOptions = statusRes.data.results.map((s) => ({
+        const res = await axios.get(`${API}/statuses/`);
+        const statusOptions = res.data.results.map((s) => ({
           value: s.id,
           label: s.name,
         }));
         setStatuses(statusOptions);
-
-        if (location.state?.productId) {
-          const found = productOptions.find(
-            (p) => p.value === location.state.productId
-          );
-          if (found) handleSelect("product", found);
-        }
-      } catch (err) {
-        console.error(err);
-        toast.error("Failed to load products or statuses");
-      } finally {
-        setLoading(false);
+      } catch {
+        toast.error("Failed to fetch statuses");
       }
     };
-
-    fetchData();
+    fetchStatuses();
   }, []);
+
+  // ---------- Fetch products with server-side search & pagination ----------
+  const fetchProducts = async (p = page, search = searchTerm) => {
+    setLoading(true);
+    try {
+      const res = await axios.get(`${API}/products/`, {
+        params: { page: p, search },
+      });
+      setProducts(res.data.results);
+      setCount(res.data.count);
+
+      // Pre-select if redirected
+      if (location.state?.productId) {
+        const found = res.data.results.find(
+          (p) => p.id === location.state.productId
+        );
+        if (found)
+          handleSelect("product", { value: found.id, label: found.name });
+      }
+    } catch {
+      toast.error("Failed to fetch products");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts(page, searchTerm);
+  }, [page, searchTerm]);
 
   // ---------- Handle select ----------
   const handleSelect = async (name, value) => {
@@ -76,7 +88,7 @@ function ChangeStatus() {
     }
   };
 
-  // ---------- Submit ----------
+  // ---------- Handle submit ----------
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.product || !form.status) {
@@ -91,51 +103,30 @@ function ChangeStatus() {
       });
       toast.success("Product status updated successfully");
 
-      setAllProducts((prev) =>
-        prev.map((p) =>
-          p.id === form.product.value
-            ? { ...p, status_name: form.status.label }
-            : p
-        )
-      );
-
+      fetchProducts(page, searchTerm);
       setForm({ product: null, status: null });
       setProductDetails(null);
-    } catch (err) {
-      console.error(err);
+    } catch {
       toast.error("Failed to update status");
     } finally {
       setSaving(false);
     }
   };
 
-  // ---------- Filter products ----------
-  const filteredProducts = allProducts.filter((p) =>
-    p.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64 text-gray-500">
-        <FaSpinner className="animate-spin mr-2" /> Loading...
-      </div>
-    );
-  }
+  const totalPages = Math.ceil(count / pageSize);
 
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-6">
-
-      {/* Form Card */}
+    <div className="max-w-8xl mx-auto p-6 space-y-6">
+      {/* ---------- Change Status Form ---------- */}
       <div className="bg-white shadow-xl rounded-2xl p-6">
-        <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-6">
-          Change Product Status
-        </h2>
+        <h2 className="text-xl sm:text-2xl font-bold mb-6">Change Product Status</h2>
+
         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Product Select */}
-          <div className="flex flex-col">
-            <label className="text-sm font-medium text-gray-700 mb-1">Product</label>
+          <div>
+            <label className="text-sm font-medium mb-1 block">Product</label>
             <Select
-              options={products}
+              options={products.map(p => ({ value: p.id, label: p.name }))}
               value={form.product}
               onChange={(v) => handleSelect("product", v)}
               placeholder="Select product..."
@@ -144,8 +135,8 @@ function ChangeStatus() {
           </div>
 
           {/* Status Select */}
-          <div className="flex flex-col">
-            <label className="text-sm font-medium text-gray-700 mb-1">New Status</label>
+          <div>
+            <label className="text-sm font-medium mb-1 block">New Status</label>
             <Select
               options={statuses}
               value={form.status}
@@ -176,66 +167,102 @@ function ChangeStatus() {
             <button
               type="button"
               onClick={() => navigate("/products")}
-              className="bg-gray-300 hover:bg-gray-400 focus:ring-2 focus:ring-gray-500 text-gray-800 px-4 py-2 rounded-lg text-sm font-medium shadow-sm"
+              className="bg-gray-300 hover:bg-gray-400 px-4 py-2 rounded-lg text-sm"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={saving}
-              className="bg-indigo-600 hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 text-white px-5 py-2 rounded-lg text-sm font-medium shadow-sm flex items-center gap-2"
+              className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg flex items-center gap-2"
             >
-              {saving && <FaSpinner className="animate-spin text-white" />}
+              {saving && <FaSpinner className="animate-spin" />}
               {saving ? "Updating..." : "Update Status"}
             </button>
           </div>
         </form>
       </div>
 
-      {/* Products Table */}
+      {/* ---------- Products Table ---------- */}
       <div className="bg-white shadow-xl rounded-2xl p-6 overflow-x-auto">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold text-gray-800">All Products Status</h3>
+        <div className="flex justify-between mb-4">
+          <h3 className="font-semibold">All Products Status</h3>
 
-          {/* Search Field */}
           <div className="relative w-64">
-            <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
               placeholder="Search product..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="border border-gray-300 rounded-lg pl-10 pr-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none text-sm w-full"
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setPage(1);
+              }}
+              className="border rounded-lg pl-10 pr-3 py-2 text-sm w-full"
             />
           </div>
         </div>
 
-        <table className="min-w-full table-auto border border-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-4 py-2 border-b text-left text-sm font-medium text-gray-700">SL</th>
-              <th className="px-4 py-2 border-b text-left text-sm font-medium text-gray-700">Product</th>
-              <th className="px-4 py-2 border-b text-left text-sm font-medium text-gray-700">Category</th>
-              <th className="px-4 py-2 border-b text-left text-sm font-medium text-gray-700">Current Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredProducts.map((p, index) => (
-              <tr key={p.id} className="hover:bg-gray-50">
-                <td className="px-4 py-2 border-b text-sm">{index + 1}</td>
-                <td className="px-4 py-2 border-b text-sm">{p.name}</td>
-                <td className="px-4 py-2 border-b text-sm">{p.category_name || "-"}</td>
-                <td className="px-4 py-2 border-b text-sm">
-                  <span className="px-2 py-1 rounded bg-blue-100 text-blue-700 text-xs font-medium">
-                    {p.status_name}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+        {loading ? (
+          <div className="flex items-center">
+            <FaSpinner className="animate-spin mr-2" /> Loading...
+          </div>
+        ) : products.length === 0 ? (
+          <p>No products found</p>
+        ) : (
+          <>
+           <table className="min-w-full border border-gray-200 divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 border-b text-left text-sm font-medium text-gray-700">SL</th>
+                  <th className="px-6 py-3 border-b text-left text-sm font-medium text-gray-700">Product</th>
+                  <th className="px-6 py-3 border-b text-left text-sm font-medium text-gray-700">Category</th>
+                  <th className="px-6 py-3 border-b text-left text-sm font-medium text-gray-700">Current Status</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {products.map((p, i) => (
+                  <tr key={p.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                      {(page - 1) * pageSize + i + 1}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{p.name}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{p.category_name || "-"}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <span className="px-2 py-1 rounded bg-blue-100 text-blue-700 text-xs font-medium">
+                        {p.status_name}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
 
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex justify-between items-center mt-4">
+                <span className="text-sm">
+                  Page {page} of {totalPages}
+                </span>
+                <div className="flex gap-2">
+                  <button disabled={page === 1} onClick={() => setPage(page - 1)} className="px-3 py-1 border rounded">Prev</button>
+                  {[...Array(totalPages)].map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setPage(i + 1)}
+                      className={`px-3 py-1 border rounded ${page === i + 1 ? "bg-indigo-600 text-white" : ""}`}
+                    >
+                      {i + 1}
+                    </button>
+                  ))}
+                  <button disabled={page === totalPages} onClick={() => setPage(page + 1)} className="px-3 py-1 border rounded">Next</button>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }

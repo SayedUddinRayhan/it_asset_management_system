@@ -25,6 +25,10 @@ class VendorViewSet(ModelViewSet):
     queryset = Vendor.objects.all().order_by("-created_at")
     serializer_class = VendorSerializer
 
+    filter_backends = [SearchFilter, OrderingFilter]
+    search_fields = ["name"]
+    ordering_fields = ["name", "created_at"]
+
     def perform_destroy(self, instance):
         instance.is_active = False
         instance.save(update_fields=["is_active"])
@@ -33,6 +37,10 @@ class VendorViewSet(ModelViewSet):
 class DepartmentViewSet(ModelViewSet):
     queryset = Department.objects.all().order_by("-created_at")
     serializer_class = DepartmentSerializer
+
+    filter_backends = [SearchFilter, OrderingFilter]
+    search_fields = ["name"]
+    ordering_fields = ["name", "created_at"]
 
     def perform_destroy(self, instance):
         instance.is_active = False
@@ -43,6 +51,10 @@ class StatusViewSet(ModelViewSet):
     queryset = Status.objects.filter(is_active=True).order_by("name")
     serializer_class = StatusSerializer
 
+    filter_backends = [SearchFilter, OrderingFilter]
+    search_fields = ["name"]
+    ordering_fields = ["name", "created_at"]
+
     def perform_destroy(self, instance):
         instance.is_active = False
         instance.save(update_fields=["is_active"])
@@ -51,6 +63,10 @@ class StatusViewSet(ModelViewSet):
 class CategoryViewSet(ModelViewSet):
     queryset = Category.objects.filter(is_active=True).order_by("name")
     serializer_class = CategorySerializer
+
+    filter_backends = [SearchFilter, OrderingFilter]
+    search_fields = ["name"]
+    ordering_fields = ["name", "created_at"]
 
     def perform_destroy(self, instance):
         instance.is_active = False
@@ -340,6 +356,10 @@ class TransferLogViewSet(ModelViewSet):
 class RepairStatusViewSet(ModelViewSet):
     queryset = RepairStatus.objects.filter(is_active=True).order_by("name")
     serializer_class = RepairStatusSerializer
+
+    filter_backends = [SearchFilter, OrderingFilter]
+    search_fields = ["name"]
+    ordering_fields = ["name", "created_at"]
 
     def perform_destroy(self, instance):
         instance.is_active = False
