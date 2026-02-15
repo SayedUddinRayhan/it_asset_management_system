@@ -12,11 +12,10 @@ function AddStatus() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  // Inline edit
+
   const [editingId, setEditingId] = useState(null);
   const [editValue, setEditValue] = useState("");
 
-  // Search & pagination
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
   const [count, setCount] = useState(0);
@@ -27,7 +26,6 @@ function AddStatus() {
   const inputStyle =
     "border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none w-full text-sm";
 
-  // Fetch statuses from server with search & pagination
   const fetchStatuses = async (p = 1, search = "") => {
     setLoading(true);
     try {
@@ -113,13 +111,15 @@ function AddStatus() {
 
   return (
     <div className="max-w-8xl mx-auto p-6 space-y-6">
-      {/* Add Status Form */}
+      {/* Add Status */}
       <div className="bg-white shadow-xl rounded-2xl p-6">
         <h2 className="text-xl sm:text-2xl font-bold mb-6">Add New Status</h2>
+
         <form
           onSubmit={handleSubmit}
           className="grid grid-cols-1 md:grid-cols-2 gap-6"
         >
+          {/* Status Name */}
           <div>
             <label className="text-sm font-medium mb-1 block">Status Name</label>
             <input
@@ -129,20 +129,24 @@ function AddStatus() {
               placeholder="Enter status name"
               className={inputStyle}
               disabled={saving}
+              required
             />
           </div>
-          <div className="md:col-span-2 flex justify-end gap-3 pt-4">
+
+          {/* Buttons – right aligned in 2nd column */}
+          <div className="flex items-end justify-end gap-3">
             <button
               type="button"
               onClick={() => navigate("/products")}
-              className="bg-gray-300 hover:bg-gray-400 px-4 py-2 rounded-lg text-sm"
+              className="border border-gray-300 text-gray-700 px-5 py-2 rounded-lg hover:bg-gray-100 transition"
             >
               Cancel
             </button>
+
             <button
               type="submit"
               disabled={saving}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg flex items-center gap-2"
+              className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg flex items-center gap-2 disabled:opacity-60"
             >
               {saving && <FaSpinner className="animate-spin" />}
               {saving ? "Saving..." : "Add Status"}
