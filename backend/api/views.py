@@ -142,7 +142,7 @@ class ProductExportExcelView(APIView):
         ordering = filters.get("ordering", "-created_at")
 
         if search:
-            qs = qs.filter(name__icontains=search)
+            qs = qs.filter(unique_code__icontains=search) | qs.filter(name__icontains=search)
         if status:
             qs = qs.filter(status_id=status)
         if category:
@@ -228,7 +228,7 @@ class ProductExportPDFView(APIView):
         ordering = filters.get("ordering", "-created_at")
 
         if search:
-            qs = qs.filter(name__icontains=search)
+            qs = qs.filter(unique_code__icontains=search) | qs.filter(name__icontains=search)
         if status:
             qs = qs.filter(status_id=status)
         if category:

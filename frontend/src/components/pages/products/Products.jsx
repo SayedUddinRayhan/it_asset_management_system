@@ -226,7 +226,7 @@ function Products() {
                 <table className="min-w-full text-[11px] sm:text-sm table-auto min-w-[900px] border border-gray-200 divide-y divide-gray-200">
                   <thead className="bg-gray-50 border-b">
                     <tr className="text-left text-gray-600">
-                      <th className="px- py-3 border-b sm:px-3 sm:py-3 w-[40px]">ID</th>
+                      <th className="px- py-3 border-b sm:px-3 sm:py-3 w-[100px]">ID</th>
                       <th className="px-2 py-3 border-b sm:px-3 sm:py-3">Name</th>
                       <th className="hidden border-b sm:table-cell px-2 py-3 sm:px-3 sm:py-3">Category</th>
                       <th className="hidden border-b md:table-cell px-2 py-3 sm:px-3 sm:py-3">Department</th>
