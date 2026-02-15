@@ -26,7 +26,7 @@ class VendorViewSet(ModelViewSet):
     serializer_class = VendorSerializer
 
     filter_backends = [SearchFilter, OrderingFilter]
-    search_fields = ["name"]
+    search_fields = ["unique_code", "name"]
     ordering_fields = ["name", "created_at"]
 
     def perform_destroy(self, instance):
@@ -39,7 +39,7 @@ class DepartmentViewSet(ModelViewSet):
     serializer_class = DepartmentSerializer
 
     filter_backends = [SearchFilter, OrderingFilter]
-    search_fields = ["name"]
+    search_fields = ["unique_code", "name"]
     ordering_fields = ["name", "created_at"]
 
     def perform_destroy(self, instance):
@@ -52,7 +52,7 @@ class StatusViewSet(ModelViewSet):
     serializer_class = StatusSerializer
 
     filter_backends = [SearchFilter, OrderingFilter]
-    search_fields = ["name"]
+    search_fields = ["unique_code", "name"]
     ordering_fields = ["name", "created_at"]
 
     def perform_destroy(self, instance):
@@ -65,7 +65,7 @@ class CategoryViewSet(ModelViewSet):
     serializer_class = CategorySerializer
 
     filter_backends = [SearchFilter, OrderingFilter]
-    search_fields = ["name"]
+    search_fields = ["unique_code", "name"]
     ordering_fields = ["name", "created_at"]
 
     def perform_destroy(self, instance):
@@ -79,7 +79,7 @@ class ProductViewSet(ModelViewSet):
     serializer_class = ProductSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ["status", "category", "current_department"]
-    search_fields = ["name", "vendor__name", "current_department__name", "warranty_years"]
+    search_fields = ["unique_code", "name", "vendor__name", "current_department__name", "warranty_years"]
     ordering_fields = ["created_at", "name", "price"]
 
     def perform_destroy(self, instance):
@@ -152,10 +152,11 @@ class ProductExportExcelView(APIView):
 
         qs = qs.order_by(ordering)
 
-        # Prepare DataFrame
+       
         data = []
         for p in qs:
             data.append({
+                "ID": p.unique_code,
                 "Name": p.name,
                 "Model Number": p.model_number,
                 "Serial Number": p.serial_number,

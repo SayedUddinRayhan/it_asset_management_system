@@ -184,6 +184,7 @@ function Categories() {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 border-b text-left text-sm font-medium text-gray-700">SL</th>
+                  <th className="px-6 py-3 border-b text-left text-sm font-medium text-gray-700">Category ID</th>
                   <th className="px-6 py-3 border-b text-left text-sm font-medium text-gray-700">Name</th>
                   <th className="px-6 py-3 border-b text-center text-sm font-medium text-gray-700">Actions</th>
                 </tr>
@@ -194,6 +195,10 @@ function Categories() {
                   <tr key={c.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 text-sm text-gray-700">
                       {(page - 1) * pageSize + i + 1}
+                    </td>
+
+                    <td className="px-6 py-4 text-sm text-gray-700">
+                      {c.unique_code}
                     </td>
 
                     <td className="px-6 py-4 text-sm text-gray-700">

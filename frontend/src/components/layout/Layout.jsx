@@ -11,7 +11,7 @@ function Layout() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false); // desktop collapse
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen overflow-x-auto">
 
       {/* Sidebar */}
       <Sidebar

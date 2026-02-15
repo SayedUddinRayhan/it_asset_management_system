@@ -217,7 +217,7 @@ function Products() {
             </select>
           </div>
 
-          {/* TABLE */}
+         {/* TABLE */}
           <div className="bg-white rounded-xl shadow overflow-hidden">
             <div className="overflow-x-auto w-full">
               {loading ? (
@@ -226,16 +226,16 @@ function Products() {
                 <table className="min-w-full text-[11px] sm:text-sm table-auto min-w-[900px] border border-gray-200 divide-y divide-gray-200">
                   <thead className="bg-gray-50 border-b">
                     <tr className="text-left text-gray-600">
-                      <th className="px- py-3 border-b sm:px-3 sm:py-3 w-[40px]">SL</th>
+                      <th className="px- py-3 border-b sm:px-3 sm:py-3 w-[40px]">ID</th>
                       <th className="px-2 py-3 border-b sm:px-3 sm:py-3">Name</th>
                       <th className="hidden border-b sm:table-cell px-2 py-3 sm:px-3 sm:py-3">Category</th>
                       <th className="hidden border-b md:table-cell px-2 py-3 sm:px-3 sm:py-3">Department</th>
                       <th className="hidden border-b lg:table-cell px-2 py-3 sm:px-3 sm:py-3">Vendor</th>
                       <th className="px-2 py-3 border-b sm:px-3 sm:py-3 w-[80px]">Price</th>
-                      <th className="px-1 py-3 border-b sm:px-2 sm:py-3 w-[70px]">Purchase</th>
-                      <th className="hidden border-b sm:table-cell px-1 py-3 sm:px-2 sm:py-3 w-[60px]">Warranty</th>
-                      <th className="hidden border-b md:table-cell px-1 py-3 sm:px-2 sm:py-3 w-[70px]">End</th>
-                      <th className="px-2 py-3 border-b sm:px-3 sm:py-3 w-[70px]">Status</th>
+                      <th className="px-1 py-3 border-b sm:px-2 sm:py-3 w-[60px]">Purchase</th>
+                      <th className="hidden border-b sm:table-cell px-1 py-3 sm:px-2 sm:py-3 w-[20px]">Warranty</th>
+                      <th className="hidden border-b md:table-cell px-1 py-3 sm:px-2 sm:py-3 w-[60px]">End</th>
+                      <th className="px-2 py-3 border-b sm:px-3 sm:py-3 w-[60px]">Status</th>
                       <th className="px-2 py-3 border-b sm:px-3 sm:py-3 text-center w-[80px]">Actions</th>
                     </tr>
                   </thead>
@@ -243,7 +243,7 @@ function Products() {
                   <tbody className="bg-white divide-y divide-gray-200">
                     {products.map((p, index) => (
                       <tr key={p.id} className="hover:bg-gray-50">
-                        <td className="px-2 py-2 sm:px-3 sm:py-3 text-left">{(page - 1) * 10 + index + 1}</td>
+                        <td className="px-2 py-2 sm:px-3 sm:py-3 text-left">{p.unique_code}</td>
 
                         {/* Name / Category / Department: wrap after 30 chars */}
                         <td className="px-2 py-2 sm:px-3 sm:py-3">
@@ -255,13 +255,13 @@ function Products() {
 
                         <td className="px-2 py-2 sm:px-3 sm:py-3 whitespace-nowrap">৳ {p.price}</td>
                         <td className="px-1 py-2 sm:px-2 sm:py-3 whitespace-nowrap text-[10px] sm:text-xs">
-                          {p.purchase_date ? new Date(p.purchase_date).toLocaleDateString("en-GB") : "N/A"}
+                          {p.purchase_date ? new Date(p.purchase_date).toLocaleDateString("en-GB", { day: '2-digit', month: '2-digit', year: '2-digit' }) : "N/A"}
                         </td>
-                        <td className="hidden sm:table-cell px-1 py-2 sm:px-2 sm:py-3 whitespace-nowrap text-[10px] sm:text-xs">
+                        <td className="hidden sm:table-cell px-1 py-2 sm:px-2 sm:py-3 whitespace-nowrap text-[10px] sm:text-xs text-center max-w-[20px]">
                           {p.warranty_years ? `${p.warranty_years}y` : "N/A"}
                         </td>
                         <td className="hidden md:table-cell px-1 py-2 sm:px-2 sm:py-3 whitespace-nowrap text-[10px] sm:text-xs">
-                          {p.warranty_end_date ? new Date(p.warranty_end_date).toLocaleDateString("en-GB") : "N/A"}
+                          {p.warranty_end_date ? new Date(p.warranty_end_date).toLocaleDateString("en-GB", { day: '2-digit', month: '2-digit', year: '2-digit' }) : "N/A"}
                         </td>
 
                         <td className="px-2 py-2 sm:px-3 sm:py-3 whitespace-nowrap">
@@ -287,6 +287,7 @@ function Products() {
               )}
             </div>
           </div>
+
 
 
           {/* PAGINATION */}

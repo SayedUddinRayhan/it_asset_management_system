@@ -3,47 +3,52 @@ from .models import ProductDocument, Vendor, Department, Status, Category, Produ
 
 @admin.register(Vendor)
 class VendorAdmin(admin.ModelAdmin):
-    list_display = ("name", "phone", "email", "is_active", "created_at", "updated_at")
-    search_fields = ("name", "phone", "email")
+    list_display = ("unique_code", "name", "phone", "email", "is_active", "created_at", "updated_at")
+    search_fields = ( "unique_code", "name", "phone", "email")
     list_filter = ("is_active",)
     ordering = ("-created_at",)
 
 
 @admin.register(Department)
 class DepartmentAdmin(admin.ModelAdmin):
-    list_display = ("name", "location", "responsible_person", "is_active", "created_at", "updated_at")
-    search_fields = ("name", "location", "responsible_person")
+    list_display = ("unique_code", "name", "location", "responsible_person", "is_active", "created_at", "updated_at")
+    search_fields = ("unique_code", "name", "location", "responsible_person")
     list_filter = ("is_active",)
     ordering = ("-created_at",)
 
 
 @admin.register(Status)
 class StatusAdmin(admin.ModelAdmin):
-    list_display = ("name", "is_active", "created_at", "updated_at")
-    search_fields = ("name",)
+    list_display = ("unique_code", "name", "is_active", "created_at", "updated_at")
+    search_fields = ("unique_code", "name")
     list_filter = ("is_active",)
     ordering = ("name",)
 
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ("name", "slug", "is_active", "created_at", "updated_at")
-    search_fields = ("name", "slug")
+    list_display = ("unique_code", "name", "slug", "is_active", "created_at", "updated_at")
+    search_fields = ("unique_code", "name", "slug")
     list_filter = ("is_active",)
     readonly_fields = ('slug',)
     ordering = ("name",)
 
 @admin.register(ProductDocument)
 class ProductDocumentAdmin(admin.ModelAdmin):
-    list_display = ("product", "file", "uploaded_at")
-    search_fields = ("product__name", "file")
+    list_display = ("product_unique_code", "file", "uploaded_at")
+    search_fields = ("product__unique_code", "product__name", "file")
     ordering = ("-uploaded_at",)
+
+    def product_unique_code(self, obj):
+        return obj.product.unique_code
+    product_unique_code.short_description = "Product Code"
+
 
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ("name", "category", "vendor", "current_department", "quantity", "price", "status", "is_active", "purchase_date", "warranty_years", "warranty_end_date")
-    search_fields = ("name", "model_number", "category__name", "vendor__name")
+    list_display = ("unique_code", "name", "category", "vendor", "current_department", "quantity", "price", "status", "is_active", "purchase_date", "warranty_years", "warranty_end_date")
+    search_fields = ("unique_code", "name", "model_number", "category__name", "vendor__name")
     list_filter = ("status", "category", "vendor", "current_department", "is_active", "warranty_years")
     ordering = ("-created_at",)
 

@@ -1,7 +1,11 @@
 from django.db import models
 from autoslug import AutoSlugField
 from dateutil.relativedelta import relativedelta
+from django.utils import timezone
+from django.db import transaction
+import random
 class Vendor(models.Model):
+    unique_code = models.CharField(max_length=8, unique=True, editable=False, db_index=True)
     name = models.CharField(max_length=200)
     phone = models.CharField(max_length=50, blank=True)
     email = models.EmailField(blank=True)
@@ -10,11 +14,29 @@ class Vendor(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+
+    def save(self, *args, **kwargs):
+        with transaction.atomic():
+            if not self.unique_code:
+                month = timezone.now().strftime("%m")
+                prefix = "VND"
+                
+                while True:
+                    rand_digits = ''.join(random.choices("0123456789", k=3))
+                    code = f"{prefix}-{month}{rand_digits}"
+                    
+                    if not Vendor.objects.filter(unique_code=code).exists():
+                        self.unique_code = code
+                        break
+
+            super().save(*args, **kwargs)
+
     def __str__(self):
         return self.name
 
 
 class Department(models.Model):
+    unique_code = models.CharField(max_length=8, unique=True, editable=False, db_index=True)
     name = models.CharField(max_length=200)
     location = models.CharField(max_length=200, blank=True)
     responsible_person = models.CharField(max_length=200, blank=True)
@@ -22,31 +44,85 @@ class Department(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+
+    def save(self, *args, **kwargs):
+        with transaction.atomic():
+            if not self.unique_code:
+                month = timezone.now().strftime("%m")
+                prefix = "DEPT"
+                
+                while True:
+                    rand_digits = ''.join(random.choices("0123456789", k=3))
+                    code = f"{prefix}-{month}{rand_digits}"
+                    
+                    if not Department.objects.filter(unique_code=code).exists():
+                        self.unique_code = code
+                        break
+
+            super().save(*args, **kwargs)
+
     def __str__(self):
         return self.name
-
-
+    
 class Status(models.Model):
+    unique_code = models.CharField(max_length=8, unique=True, editable=False, db_index=True)
     name = models.CharField(max_length=50, unique=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+
+    def save(self, *args, **kwargs):
+
+        with transaction.atomic():
+            if not self.unique_code:
+                month = timezone.now().strftime("%m")
+                prefix = "STAT"
+                
+                while True:
+                    rand_digits = ''.join(random.choices("0123456789", k=3))
+                    code = f"{prefix}-{month}{rand_digits}"
+                    
+                    if not Status.objects.filter(unique_code=code).exists():
+                        self.unique_code = code
+                        break
+
+            super().save(*args, **kwargs)
+
     def __str__(self):
         return self.name
     
 class Category(models.Model):
+    unique_code = models.CharField(max_length=8, unique=True, editable=False, db_index=True)
     name = models.CharField(max_length=100, unique=True)
     slug = AutoSlugField(populate_from='name', unique=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+
+    def save(self, *args, **kwargs):
+        with transaction.atomic():
+            if not self.unique_code:
+                month = timezone.now().strftime("%m")
+                prefix = "CAT"
+                
+                while True:
+                    rand_digits = ''.join(random.choices("0123456789", k=3))
+                    code = f"{prefix}-{month}{rand_digits}"
+                    
+                    if not Category.objects.filter(unique_code=code).exists():
+                        self.unique_code = code
+                        break
+
+            super().save(*args, **kwargs)
+
     def __str__(self):
         return self.name
 
 
 class Product(models.Model):
+    unique_code = models.CharField(max_length=8, unique=True, editable=False, db_index=True)
     name = models.CharField(max_length=200)
     category = models.ForeignKey(Category, on_delete=models.PROTECT)
     vendor = models.ForeignKey(Vendor, on_delete=models.PROTECT)
@@ -65,9 +141,27 @@ class Product(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
-        if self.purchase_date and self.warranty_years:
-            self.warranty_end_date = self.purchase_date + relativedelta(years=self.warranty_years)
-        super().save(*args, **kwargs)
+
+        with transaction.atomic():
+            if not self.unique_code:
+                month = timezone.now().strftime("%m")
+                prefix = "PRD"
+                
+                while True:
+                    rand_digits = ''.join(random.choices("0123456789", k=3))
+                    code = f"{prefix}-{month}{rand_digits}"
+                    
+                    if not Product.objects.filter(unique_code=code).exists():
+                        self.unique_code = code
+                        break
+
+
+            if self.purchase_date and self.warranty_years is not None:
+                self.warranty_end_date = self.purchase_date + relativedelta(years=self.warranty_years)
+            else:
+                self.warranty_end_date = None
+
+            super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name

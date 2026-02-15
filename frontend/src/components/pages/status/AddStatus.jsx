@@ -185,6 +185,7 @@ function AddStatus() {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 border-b text-left text-sm font-medium text-gray-700 w-[80px]">SL</th>
+                  <th className="px-6 py-3 border-b text-left text-sm font-medium text-gray-700">Status ID</th>
                   <th className="px-6 py-3 border-b text-left text-sm font-medium text-gray-700">Status Name</th>
                   <th className="px-6 py-3 border-b text-left text-sm font-medium text-gray-700">Actions</th>
                 </tr>
@@ -197,6 +198,9 @@ function AddStatus() {
                   >
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                       {(page - 1) * pageSize + index + 1}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                      {s.unique_code}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-700">
                       {editingId === s.id ? (
