@@ -82,8 +82,13 @@ class RepairStatusSerializer(serializers.ModelSerializer):
 
 
 class RepairLogSerializer(serializers.ModelSerializer):
+    product_name = serializers.CharField(source="product.name", read_only=True)
+    product_code = serializers.CharField(source="product.unique_code", read_only=True)
+    status_name = serializers.CharField(source="status.product_status_name", read_only=True)
+
     class Meta:
         model = RepairLog
-        fields = '__all__'
+        fields = "__all__"
+
 
 
