@@ -57,9 +57,20 @@ class ProductSerializer(serializers.ModelSerializer):
 
 
 class TransferLogSerializer(serializers.ModelSerializer):
+    unique_code = serializers.CharField(source='product.unique_code', read_only=True)
+    product_name = serializers.CharField(source='product.name', read_only=True)
+    from_department_name = serializers.CharField(source='from_department.name', read_only=True)
+    to_department_name = serializers.CharField(source='to_department.name', read_only=True)
+    transfer_date = serializers.DateField(read_only=True)
+
     class Meta:
         model = TransferLog
         fields = '__all__'
+        read_only_fields = ['from_department', 'transfer_date']
+
+
+    
+
 
 
 

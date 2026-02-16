@@ -178,12 +178,13 @@ class TransferLog(models.Model):
     product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True)
     from_department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, related_name="from_dept")
     to_department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, related_name="to_dept")
-    transfer_date = models.DateField()
+    transfer_date = models.DateField(auto_now_add=True)
     note = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.product.name} transfer"
+        return f"{self.product.name if self.product else 'Unknown'} transfer"
+
 
 
 class RepairStatus(models.Model):

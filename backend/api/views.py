@@ -349,12 +349,20 @@ class TransferLogViewSet(ModelViewSet):
         "product", "from_department", "to_department"
     ).order_by("-created_at")
     serializer_class = TransferLogSerializer
+    filter_backends = [SearchFilter]
+    search_fields = ['product__unique_code', 'product__name', 'from_department__name', 'to_department__name']
 
     def perform_create(self, serializer):
         transfer = serializer.save()
+
         if transfer.product:
+            old_dept = transfer.product.current_department
+
+            transfer.from_department = old_dept
+            transfer.save(update_fields=["from_department"])
+
             transfer.product.current_department = transfer.to_department
-            transfer.product.save()
+            transfer.product.save(update_fields=["current_department"])
 
 class RepairStatusViewSet(ModelViewSet):
     queryset = RepairStatus.objects.filter(is_active=True).order_by("-created_at")
