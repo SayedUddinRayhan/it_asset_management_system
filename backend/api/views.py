@@ -357,7 +357,7 @@ class TransferLogViewSet(ModelViewSet):
             transfer.product.save()
 
 class RepairStatusViewSet(ModelViewSet):
-    queryset = RepairStatus.objects.filter(is_active=True).order_by("name")
+    queryset = RepairStatus.objects.filter(is_active=True).order_by("-created_at")
     serializer_class = RepairStatusSerializer
 
     filter_backends = [SearchFilter, OrderingFilter]

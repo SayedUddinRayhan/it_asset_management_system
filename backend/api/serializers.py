@@ -64,6 +64,7 @@ class TransferLogSerializer(serializers.ModelSerializer):
 
 
 class RepairStatusSerializer(serializers.ModelSerializer):
+    product_status_name = serializers.CharField(source='product_status.name', read_only=True)
     class Meta:
         model = RepairStatus
         fields = '__all__'
