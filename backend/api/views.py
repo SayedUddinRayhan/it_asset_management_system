@@ -22,7 +22,7 @@ from openpyxl.utils import get_column_letter
 
 
 class VendorViewSet(ModelViewSet):
-    queryset = Vendor.objects.all().order_by("-created_at")
+    queryset = Vendor.objects.filter(is_active=True).order_by("-created_at")
     serializer_class = VendorSerializer
 
     filter_backends = [SearchFilter, OrderingFilter]
@@ -35,7 +35,7 @@ class VendorViewSet(ModelViewSet):
 
 
 class DepartmentViewSet(ModelViewSet):
-    queryset = Department.objects.all().order_by("-created_at")
+    queryset = Department.objects.filter(is_active=True).order_by("-created_at")
     serializer_class = DepartmentSerializer
 
     filter_backends = [SearchFilter, OrderingFilter]
@@ -260,7 +260,7 @@ class ProductExportPDFView(APIView):
         elements.append(Spacer(1, 12))
 
         # Table headers
-        headers = ["SL", "Name", "Category", "Department", "Vendor", "Price", "Purchase", "Warranty", "End", "Status"]
+        headers = ["SL", "ID", "Name", "Category", "Department", "Vendor", "Price", "Purchase", "Warranty", "End", "Status"]
         data = [headers]
 
         # Wrap long text using Paragraph
@@ -271,6 +271,7 @@ class ProductExportPDFView(APIView):
         for i, prod in enumerate(qs, start=1):
             row = [
                 str(i),
+                prod.unique_code,
                 Paragraph(prod.name if prod.name else "-", wrap_style),
                 Paragraph(prod.category.name if prod.category else "-", wrap_style),
                 Paragraph(prod.current_department.name if prod.current_department else "-", wrap_style),
@@ -286,15 +287,16 @@ class ProductExportPDFView(APIView):
         # Column widths (compact and balanced)
         col_widths = [
             1.0*cm,   # SL
+            2.0*cm,   # ID
             5.5*cm,   # Name
             3.0*cm,   # Category
             3.0*cm,   # Department
             3.0*cm,   # Vendor
             2.0*cm,   # Price
-            2.5*cm,   # Purchase
+            2.0*cm,   # Purchase
             1.9*cm,   # Warranty
             2.0*cm,   # End
-            2.3*cm,   # Status
+            2.0*cm,   # Status
         ]
 
         table = Table(data, colWidths=col_widths, repeatRows=1)
