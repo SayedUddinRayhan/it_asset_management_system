@@ -75,3 +75,5 @@ class RepairLogAdmin(admin.ModelAdmin):
     search_fields = ("product__name", "repair_vendor", "status__name")
     list_filter = ("status",)
     ordering = ("-created_at",)
+
+

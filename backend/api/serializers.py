@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Vendor, Department, Status, Category, Product, ProductDocument, TransferLog, RepairStatus, RepairLog
+from .models import Vendor, Department, Status, Category, Product, ProductDocument, TransferLog, RepairStatus, RepairLog, RepairMovement
 
 class VendorSerializer(serializers.ModelSerializer):
     unique_code = serializers.CharField(read_only=True)
@@ -84,11 +84,27 @@ class RepairStatusSerializer(serializers.ModelSerializer):
 class RepairLogSerializer(serializers.ModelSerializer):
     product_name = serializers.CharField(source="product.name", read_only=True)
     product_code = serializers.CharField(source="product.unique_code", read_only=True)
-    status_name = serializers.CharField(source="status.product_status_name", read_only=True)
+    status_name = serializers.CharField(source="status.name", read_only=True)
+    repair_vendor_name = serializers.CharField(source="repair_vendor.name", read_only=True)
+
+    repair_vendor = serializers.PrimaryKeyRelatedField(queryset=Vendor.objects.filter(is_active=True))
 
     class Meta:
         model = RepairLog
         fields = "__all__"
+
+
+class RepairMovementSerializer(serializers.ModelSerializer):
+    product_name = serializers.CharField(source="product.name", read_only=True)
+    product_code = serializers.CharField(source="product.unique_code", read_only=True)
+    status_name = serializers.CharField(source="status.name", read_only=True)
+    vendor_name = serializers.CharField(source="to_vendor.name", read_only=True)
+    from_department_name = serializers.CharField(source="from_department.name", read_only=True)
+
+    class Meta:
+        model = RepairMovement
+        fields = "__all__"
+
 
 
 

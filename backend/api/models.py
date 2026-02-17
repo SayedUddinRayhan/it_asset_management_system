@@ -196,17 +196,37 @@ class RepairStatus(models.Model):
     def __str__(self):
         return self.name
 
-
+\
 class RepairLog(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     fault_description = models.TextField()
-    repair_vendor = models.CharField(max_length=200)
+    repair_vendor = models.ForeignKey(Vendor, on_delete=models.SET_NULL, null=True, blank=True)
     sent_date = models.DateField()
     received_date = models.DateField(null=True, blank=True)
     repair_cost = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    status = models.ForeignKey(RepairStatus, on_delete=models.SET_NULL, null=True)
+    status = models.ForeignKey(RepairStatus, on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.product.name} repair"
+
+
+class RepairMovement(models.Model):
+    repair = models.ForeignKey(RepairLog, on_delete=models.CASCADE, related_name="movements")
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="repair_movements")
+    from_department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, related_name="repair_from_department")
+    to_vendor = models.ForeignKey(Vendor, on_delete=models.SET_NULL, null=True, related_name="repair_to_vendor")
+    status = models.ForeignKey(RepairStatus, on_delete=models.SET_NULL, null=True, blank=True)
+    note = models.TextField(blank=True)
+    changed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-changed_at"]
+
+    def __str__(self):
+        return f"{self.product.unique_code} → {self.status.name if self.status else 'Unknown'}"
+
+
+
+
 

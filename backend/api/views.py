@@ -1,10 +1,11 @@
 from rest_framework.viewsets import ModelViewSet
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
-from .models import Vendor, Department, Status, Category, Product, ProductDocument, TransferLog, RepairStatus, RepairLog
-from .serializers import VendorSerializer, DepartmentSerializer, StatusSerializer, CategorySerializer, ProductDocumentSerializer, ProductSerializer, TransferLogSerializer, RepairStatusSerializer, RepairLogSerializer
+from .models import Vendor, Department, Status, Category, Product, ProductDocument, TransferLog, RepairStatus, RepairLog, RepairMovement
+from .serializers import VendorSerializer, DepartmentSerializer, StatusSerializer, CategorySerializer, ProductDocumentSerializer, ProductSerializer, TransferLogSerializer, RepairStatusSerializer, RepairLogSerializer, RepairMovementSerializer
 from rest_framework.response import Response
 from rest_framework import status
+from django.db import transaction
 
 import io
 import pandas as pd
@@ -378,14 +379,58 @@ class RepairStatusViewSet(ModelViewSet):
 
 
 class RepairLogViewSet(ModelViewSet):
-    queryset = RepairLog.objects.select_related(
-        "product", "status"
-    ).order_by("-created_at")
+    queryset = RepairLog.objects.select_related("product", "status").order_by("-created_at")
     serializer_class = RepairLogSerializer
 
-    def perform_update(self, serializer):
-        repair = serializer.save()
+    def perform_create(self, serializer):
+        with transaction.atomic():
+            repair = serializer.save()
 
-        if repair.product and repair.status and repair.status.product_status:
-            repair.product.status = repair.status.product_status
-            repair.product.save()
+            # Sync product status
+            if repair.product and repair.status and repair.status.product_status:
+                repair.product.status = repair.status.product_status
+                repair.product.save(update_fields=["status"])
+
+            # Create initial repair movement
+            RepairMovement.objects.create(
+                repair=repair,
+                product=repair.product,
+                status=repair.status,
+                from_department=repair.product.current_department,
+                to_vendor=repair.repair_vendor, 
+                note="Repair created",
+            )
+
+
+    def perform_update(self, serializer):
+        with transaction.atomic():
+            repair = serializer.save()
+
+            # Sync product status
+            if repair.product and repair.status and repair.status.product_status:
+                repair.product.status = repair.status.product_status
+                repair.product.save(update_fields=["status"])
+
+            # Create movement history
+            RepairMovement.objects.create(
+                repair=repair,
+                product=repair.product,
+                status=repair.status,
+                note="Status updated from repair log"
+            )
+
+
+class RepairMovementViewSet(ModelViewSet):
+    queryset = RepairMovement.objects.select_related(
+        "product", "repair", "status", "to_vendor", "from_department"
+    )
+    serializer_class = RepairMovementSerializer
+    filter_backends = [SearchFilter, OrderingFilter]
+    search_fields = [
+        "product__name",
+        "product__unique_code",
+        "status__name",
+        "to_vendor__name"
+    ]
+    ordering = ["-changed_at"]
+
