@@ -230,7 +230,7 @@ function Vendors() {
           <p>No vendors found</p>
         ) : (
           <>
-            <table className="min-w-full border border-gray-200 divide-y divide-gray-200">
+            <table className="min-w-full text-[11px] sm:text-sm table-auto min-w-[900px] border border-gray-200 divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
                   {["SL", "Vendor ID", "Name", "Phone", "Email", "Address", "Actions"].map((h) => (

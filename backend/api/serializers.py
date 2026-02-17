@@ -93,6 +93,18 @@ class RepairLogSerializer(serializers.ModelSerializer):
         model = RepairLog
         fields = "__all__"
 
+    
+    def validate(self, data):
+        sent = data.get("sent_date")
+        received = data.get("received_date")
+
+        if sent and received and received < sent:
+            raise serializers.ValidationError({
+                "received_date": "Received date cannot be before sent date."
+            })
+        return data
+
+
 
 class RepairMovementSerializer(serializers.ModelSerializer):
     product_name = serializers.CharField(source="product.name", read_only=True)
