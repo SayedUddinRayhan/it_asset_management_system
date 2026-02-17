@@ -201,7 +201,7 @@ class RepairLog(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     fault_description = models.TextField()
     repair_vendor = models.ForeignKey(Vendor, on_delete=models.SET_NULL, null=True, blank=True)
-    sent_date = models.DateField()
+    sent_date = models.DateField(null=True, blank=True)
     received_date = models.DateField(null=True, blank=True)
     repair_cost = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     status = models.ForeignKey(RepairStatus, on_delete=models.SET_NULL, null=True, blank=True)
@@ -209,6 +209,20 @@ class RepairLog(models.Model):
 
     def __str__(self):
         return f"{self.product.name} repair"
+
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None
+        super().save(*args, **kwargs)
+        # Create initial movement only on new repair
+        if is_new and self.status:
+            RepairMovement.objects.create(
+                repair=self,
+                product=self.product,
+                from_department=None,  # Initial entry
+                status=self.status,
+                note="Repair entry created"
+            )
+
 
 
 class RepairMovement(models.Model):

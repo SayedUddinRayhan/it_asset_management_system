@@ -87,7 +87,7 @@ class RepairLogSerializer(serializers.ModelSerializer):
     status_name = serializers.CharField(source="status.name", read_only=True)
     repair_vendor_name = serializers.CharField(source="repair_vendor.name", read_only=True)
 
-    repair_vendor = serializers.PrimaryKeyRelatedField(queryset=Vendor.objects.filter(is_active=True))
+    repair_vendor = serializers.PrimaryKeyRelatedField(queryset=Vendor.objects.filter(is_active=True), required=False, allow_null=True)
 
     class Meta:
         model = RepairLog

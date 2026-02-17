@@ -374,12 +374,14 @@ class RepairStatusViewSet(ModelViewSet):
     ordering_fields = ["name", "created_at"]
 
     def perform_destroy(self, instance):
+        # Soft delete instead of actual deletion
         instance.is_active = False
         instance.save(update_fields=["is_active"])
 
 
+
 class RepairLogViewSet(ModelViewSet):
-    queryset = RepairLog.objects.select_related("product", "status").order_by("-created_at")
+    queryset = RepairLog.objects.select_related("product", "status", "repair_vendor").order_by("-created_at")
     serializer_class = RepairLogSerializer
 
     def perform_create(self, serializer):
@@ -396,11 +398,10 @@ class RepairLogViewSet(ModelViewSet):
                 repair=repair,
                 product=repair.product,
                 status=repair.status,
-                from_department=repair.product.current_department,
-                to_vendor=repair.repair_vendor, 
+                from_department=repair.product.current_department if hasattr(repair.product, 'current_department') else None,
+                to_vendor=repair.repair_vendor,
                 note="Repair created",
             )
-
 
     def perform_update(self, serializer):
         with transaction.atomic():
@@ -416,15 +417,19 @@ class RepairLogViewSet(ModelViewSet):
                 repair=repair,
                 product=repair.product,
                 status=repair.status,
+                from_department=repair.product.current_department if hasattr(repair.product, 'current_department') else None,
+                to_vendor=repair.repair_vendor,
                 note="Status updated from repair log"
             )
+
 
 
 class RepairMovementViewSet(ModelViewSet):
     queryset = RepairMovement.objects.select_related(
         "product", "repair", "status", "to_vendor", "from_department"
-    )
+    ).order_by("-changed_at")
     serializer_class = RepairMovementSerializer
+
     filter_backends = [SearchFilter, OrderingFilter]
     search_fields = [
         "product__name",
@@ -433,4 +438,5 @@ class RepairMovementViewSet(ModelViewSet):
         "to_vendor__name"
     ]
     ordering = ["-changed_at"]
+
 
