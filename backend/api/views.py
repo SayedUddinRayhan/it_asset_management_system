@@ -383,6 +383,7 @@ class RepairStatusViewSet(ModelViewSet):
 class RepairLogViewSet(ModelViewSet):
     queryset = RepairLog.objects.select_related("product", "status", "repair_vendor").order_by("-created_at")
     serializer_class = RepairLogSerializer
+    pagination_class = None 
 
     def perform_create(self, serializer):
         with transaction.atomic():
