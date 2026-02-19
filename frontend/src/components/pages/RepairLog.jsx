@@ -5,37 +5,27 @@ import axios from "axios";
 import { FaSpinner } from "react-icons/fa";
 import "react-datepicker/dist/react-datepicker.css";
 import { format } from "date-fns";
+import { toast } from "react-toastify";
 
 function RepairLog() {
   const API = "http://127.0.0.1:8000/api";
 
-  // Tabs
-  const tabs = [
-    "New Repair Entry",
-    "Send to Vendor",
-    "Product Return",
-    "Ready to Send Back Dept",
-  ];
+  const tabs = ["New Repair Entry", "Send to Vendor", "Return from Vendor"];
   const [activeTab, setActiveTab] = useState(tabs[0]);
 
-  // Data
   const [logs, setLogs] = useState([]);
   const [products, setProducts] = useState([]);
-  const [statuses, setStatuses] = useState([]);
   const [vendors, setVendors] = useState([]);
+  const [repairingStatusId, setRepairingStatusId] = useState(null);
+  const [inStockStatusId, setInStockStatusId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  // Form state for new repair
-  const [form, setForm] = useState({
-    product: null,
-    fault_description: "",
-  });
-
+  const [form, setForm] = useState({ product: null, fault_description: "" });
   const inputStyle =
     "border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none w-full text-sm";
 
-  // Fetch all data
+  // Fetch all required data
   const fetchAllData = async () => {
     try {
       setLoading(true);
@@ -47,11 +37,18 @@ function RepairLog() {
       ]);
 
       setProducts(prodRes.data.results);
-      setStatuses(statusRes.data.results);
       setVendors(vendorRes.data.results);
       setLogs(logRes.data.results);
+
+      const repairing = statusRes.data.results.find((s) => s.name === "Repairing");
+      const inStock = statusRes.data.results.find((s) => s.name === "In Stock");
+      setRepairingStatusId(repairing?.id);
+      setInStockStatusId(inStock?.id);
+
+      toast.success("Data fetched successfully");
     } catch (err) {
       console.error(err);
+      toast.error("Failed to fetch data");
     } finally {
       setLoading(false);
     }
@@ -61,95 +58,95 @@ function RepairLog() {
     fetchAllData();
   }, []);
 
-  // Options
   const productOptions = products.map((p) => ({
     value: p.id,
     label: `${p.unique_code} - ${p.name}`,
   }));
 
-  const vendorOptions = vendors.map((v) => ({
-    value: v.id,
-    label: v.name,
-  }));
+  const vendorOptions = vendors.map((v) => ({ value: v.id, label: v.name }));
 
-  // Map status names to IDs dynamically
-  const statusMap = {};
-  statuses.forEach((s) => {
-    statusMap[s.name] = s.id;
+  // Filter logs for each tab
+  const logsInTab = logs.filter((log) => {
+    switch (activeTab) {
+      case "New Repair Entry":
+        return log.status_name === "Repairing" && !log.sent_date;
+      case "Send to Vendor":
+        return log.status_name === "Repairing" && log.fault_description && !log.sent_date;
+      case "Return from Vendor":
+        return log.status_name === "Repairing" && log.sent_date && !log.received_date;
+      default:
+        return false;
+    }
   });
 
-  // Workflow mapping
-  const workflowStages = {
-    "New Repair Entry": ["Ready to Send Vendor"],
-    "Send to Vendor": ["Sent to Vendor"],
-    "Product Return": ["Returned from Vendor"],
-    "Ready to Send Back Dept": ["Repaired", "Not Repaired", "Ready to Send Back Dept"],
-  };
-
-  // Filter logs by tab
-  const logsInTab = logs.filter((log) =>
-    workflowStages[activeTab].includes(log.status_name)
-  );
-
-  // Get total count for tab
-  const getTabCount = (tabName) => {
-    const stages = workflowStages[tabName];
-    return logs.filter((log) => stages.includes(log.status_name)).length;
-  };
+  const getTabCount = (tabName) =>
+    logs.filter((log) => {
+      switch (tabName) {
+        case "New Repair Entry":
+          return log.status_name === "Repairing" && !log.sent_date;
+        case "Send to Vendor":
+          return log.status_name === "Repairing" && log.fault_description && !log.sent_date;
+        case "Return from Vendor":
+          return log.status_name === "Repairing" && log.sent_date && !log.received_date;
+        default:
+          return false;
+      }
+    }).length;
 
   // Handlers
   const handleNewRepairSubmit = async (e) => {
     e.preventDefault();
     if (!form.product || !form.fault_description) return alert("Required fields");
     setSaving(true);
-
     try {
       await axios.post(`${API}/repairs/`, {
         product: form.product.value,
         fault_description: form.fault_description,
-        status: statusMap["Ready to Send Vendor"], // dynamic
+        status: repairingStatusId,
       });
       setForm({ product: null, fault_description: "" });
       fetchAllData();
+      toast.success("Repair added");
     } catch (err) {
       console.error(err);
-      alert("Failed to add repair");
+      toast.error("Failed to add repair");
     } finally {
       setSaving(false);
     }
   };
 
-  const moveToVendor = async (log) => {
-    if (!log.vendor || !log.sent_date)
-      return alert("Select vendor and sent date");
+  const sendToVendor = async (log) => {
+    if (!log.vendor || !log.sent_date) return alert("Select vendor and sent date");
     setSaving(true);
     try {
       await axios.patch(`${API}/repairs/${log.id}/`, {
-        status: statusMap["Sent to Vendor"],
         repair_vendor: log.vendor.value,
         sent_date: format(log.sent_date, "yyyy-MM-dd"),
+        status: repairingStatusId,
       });
       fetchAllData();
+      toast.success("Sent to vendor");
     } catch (err) {
       console.error(err);
+      toast.error("Failed to send to vendor");
     } finally {
       setSaving(false);
     }
   };
 
-  const finalizeReturn = async (log, newStatusName) => {
-    if (!newStatusName) return alert("Select status");
+  const receiveFromVendor = async (log) => {
+    if (!log.received_date) return alert("Select received date");
     setSaving(true);
     try {
       await axios.patch(`${API}/repairs/${log.id}/`, {
-        status: statusMap[newStatusName],
-        received_date: log.received_date
-          ? format(log.received_date, "yyyy-MM-dd")
-          : null,
+        received_date: format(log.received_date, "yyyy-MM-dd"),
+        status: inStockStatusId,
       });
       fetchAllData();
+      toast.success("Product returned to stock");
     } catch (err) {
       console.error(err);
+      toast.error("Failed to return product");
     } finally {
       setSaving(false);
     }
@@ -175,187 +172,108 @@ function RepairLog() {
       <div className="bg-white shadow-xl rounded-2xl p-6">
         {/* New Repair Entry */}
         {activeTab === "New Repair Entry" && (
-          <>
-            <h2 className="text-xl font-bold text-gray-800 mb-4">Add New Repair</h2>
-            <form onSubmit={handleNewRepairSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="flex flex-col">
-                <label className="text-sm font-medium text-gray-700 mb-1">Product</label>
-                <Select
-                  options={productOptions}
-                  value={form.product}
-                  onChange={(v) => setForm({ ...form, product: v })}
-                />
-              </div>
-              <div className="flex flex-col">
-                <label className="text-sm font-medium text-gray-700 mb-1">Fault Description</label>
-                <textarea
-                  rows={2}
-                  className={inputStyle}
-                  value={form.fault_description}
-                  onChange={(e) => setForm({ ...form, fault_description: e.target.value })}
-                />
-              </div>
-              <div className="flex items-end">
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg flex items-center gap-2"
-                >
-                  {saving && <FaSpinner className="animate-spin" />}
-                  {saving ? "Saving..." : "Add Repair"}
-                </button>
-              </div>
-            </form>
-          </>
+          <form onSubmit={handleNewRepairSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="flex flex-col">
+              <label className="text-sm font-medium text-gray-700 mb-1">Product</label>
+              <Select
+                options={productOptions}
+                value={form.product}
+                onChange={(v) => setForm({ ...form, product: v })}
+              />
+            </div>
+            <div className="flex flex-col">
+              <label className="text-sm font-medium text-gray-700 mb-1">Fault Description</label>
+              <textarea
+                rows={2}
+                className={inputStyle}
+                value={form.fault_description}
+                onChange={(e) => setForm({ ...form, fault_description: e.target.value })}
+              />
+            </div>
+            <div className="flex items-end">
+              <button
+                type="submit"
+                disabled={saving}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg flex items-center gap-2"
+              >
+                {saving && <FaSpinner className="animate-spin" />}
+                {saving ? "Saving..." : "Add Repair"}
+              </button>
+            </div>
+          </form>
         )}
 
-        {/* Send to Vendor */}
-        {activeTab === "Send to Vendor" && (
-          <>
-            <h2 className="text-xl font-bold text-gray-800 mb-4">Send Products to Vendor</h2>
-            <table className="min-w-full border border-gray-200 divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 border-b text-left text-sm">Product</th>
-                  <th className="px-6 py-3 border-b text-left text-sm">Fault</th>
-                  <th className="px-6 py-3 border-b text-left text-sm">Vendor</th>
-                  <th className="px-6 py-3 border-b text-left text-sm">Sent Date</th>
-                  <th className="px-6 py-3 border-b text-left text-sm">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {logsInTab.map((log) => (
-                  <tr key={log.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4">{log.product_name}</td>
-                    <td className="px-6 py-4">{log.fault_description}</td>
+        {/* Send to Vendor & Return from Vendor Tables */}
+        {(activeTab === "Send to Vendor" || activeTab === "Return from Vendor") && (
+          <table className="min-w-full border border-gray-200 divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-sm">Product</th>
+                <th className="px-6 py-3 text-left text-sm">Fault</th>
+                {activeTab === "Send to Vendor" && <th className="px-6 py-3 text-left text-sm">Vendor</th>}
+                <th className="px-6 py-3 text-left text-sm">{activeTab === "Send to Vendor" ? "Sent Date" : "Received Date"}</th>
+                <th className="px-6 py-3 text-left text-sm">Action</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y">
+              {logsInTab.map((log) => (
+                <tr key={log.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4">{log.product_name}</td>
+                  <td className="px-6 py-4">{log.fault_description}</td>
+
+                  {activeTab === "Send to Vendor" && (
                     <td className="px-6 py-4 w-64">
                       <Select
                         options={vendorOptions}
                         value={log.vendor || null}
                         onChange={(v) => {
                           const updatedLog = { ...log, vendor: v };
-                          setLogs((prev) =>
-                            prev.map((l) => (l.id === log.id ? updatedLog : l))
-                          );
+                          setLogs((prev) => prev.map((l) => (l.id === log.id ? updatedLog : l)));
                         }}
                         placeholder="Select Vendor"
                       />
                     </td>
-                    <td className="px-6 py-4 w-40">
-                      <DatePicker
-                        selected={log.sent_date || null}
-                        onChange={(d) => {
-                          const updatedLog = { ...log, sent_date: d };
-                          setLogs((prev) =>
-                            prev.map((l) => (l.id === log.id ? updatedLog : l))
-                          );
-                        }}
-                        className={inputStyle}
-                        dateFormat="dd/MM/yyyy"
-                        placeholderText="Select Date"
-                      />
-                    </td>
-                    <td className="px-6 py-4">
+                  )}
+
+                  <td className="px-6 py-4 w-40">
+                    <DatePicker
+                      selected={log[activeTab === "Send to Vendor" ? "sent_date" : "received_date"] ? new Date(log[activeTab === "Send to Vendor" ? "sent_date" : "received_date"]) : null}
+                      onChange={(d) => {
+                        const updatedLog = { ...log };
+                        if (activeTab === "Send to Vendor") updatedLog.sent_date = d;
+                        else updatedLog.received_date = d;
+                        setLogs((prev) => prev.map((l) => (l.id === log.id ? updatedLog : l)));
+                      }}
+                      className={inputStyle}
+                      dateFormat="dd/MM/yyyy"
+                      placeholderText={activeTab === "Send to Vendor" ? "Sent Date" : "Received Date"}
+                    />
+                  </td>
+
+                  <td className="px-6 py-4">
+                    {activeTab === "Send to Vendor" && (
                       <button
-                        onClick={() => moveToVendor(log)}
+                        onClick={() => sendToVendor(log)}
+                        disabled={!log.vendor || !log.sent_date || saving}
                         className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg text-sm"
                       >
                         Send
                       </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </>
-        )}
-
-        {/* Product Return */}
-        {activeTab === "Product Return" && (
-          <>
-            <h2 className="text-xl font-bold text-gray-800 mb-4">Return Products</h2>
-            <table className="min-w-full border border-gray-200 divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 border-b text-left text-sm">Product</th>
-                  <th className="px-6 py-3 border-b text-left text-sm">Fault</th>
-                  <th className="px-6 py-3 border-b text-left text-sm">Received Date</th>
-                  <th className="px-6 py-3 border-b text-left text-sm">Status</th>
-                  <th className="px-6 py-3 border-b text-left text-sm">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {logsInTab.map((log) => (
-                  <tr key={log.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4">{log.product_name}</td>
-                    <td className="px-6 py-4">{log.fault_description}</td>
-                    <td className="px-6 py-4 w-40">
-                      <DatePicker
-                        selected={log.received_date ? new Date(log.received_date) : null}
-                        onChange={(d) => {
-                          const updatedLog = { ...log, received_date: d };
-                          setLogs((prev) =>
-                            prev.map((l) => (l.id === log.id ? updatedLog : l))
-                          );
-                        }}
-                        className={inputStyle}
-                        dateFormat="dd/MM/yyyy"
-                        placeholderText="Received Date"
-                      />
-                    </td>
-                    <td className="px-6 py-4 w-56">
-                      <Select
-                        options={statuses
-                          .filter((s) => ["Repaired", "Not Repaired"].includes(s.name))
-                          .map((s) => ({ label: s.name, value: s.id }))}
-                        value={log.status || null}
-                        onChange={(v) => {
-                          const updatedLog = { ...log, status: v };
-                          setLogs((prev) =>
-                            prev.map((l) => (l.id === log.id ? updatedLog : l))
-                          );
-                        }}
-                        placeholder="Select Status"
-                      />
-                    </td>
-                    <td className="px-6 py-4">
+                    )}
+                    {activeTab === "Return from Vendor" && (
                       <button
-                        onClick={() => finalizeReturn(log, log.status?.label)}
+                        onClick={() => receiveFromVendor(log)}
+                        disabled={!log.received_date || saving}
                         className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-lg text-sm"
                       >
-                        Update
+                        Receive
                       </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </>
-        )}
-
-        {/* Ready to Send Back Dept */}
-        {activeTab === "Ready to Send Back Dept" && (
-          <>
-            <h2 className="text-xl font-bold text-gray-800 mb-4">Ready to Send Back to Department</h2>
-            <table className="min-w-full border border-gray-200 divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 border-b text-left text-sm">Product</th>
-                  <th className="px-6 py-3 border-b text-left text-sm">Fault</th>
-                  <th className="px-6 py-3 border-b text-left text-sm">Status</th>
+                    )}
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="divide-y">
-                {logsInTab.map((log) => (
-                  <tr key={log.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4">{log.product_name}</td>
-                    <td className="px-6 py-4">{log.fault_description}</td>
-                    <td className="px-6 py-4">{log.status_name}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </>
+              ))}
+            </tbody>
+          </table>
         )}
       </div>
     </div>

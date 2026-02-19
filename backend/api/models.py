@@ -191,46 +191,53 @@ class RepairStatus(models.Model):
     name = models.CharField(max_length=50, unique=True)
     product_status = models.ForeignKey(Status, on_delete=models.SET_NULL, null=True, blank=True)
     is_active = models.BooleanField(default=True)
+    is_final = models.BooleanField(default=False) 
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.name
 
-\
+
 class RepairLog(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="repairs")
     fault_description = models.TextField()
     repair_vendor = models.ForeignKey(Vendor, on_delete=models.SET_NULL, null=True, blank=True)
     sent_date = models.DateField(null=True, blank=True)
     received_date = models.DateField(null=True, blank=True)
     repair_cost = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    status = models.ForeignKey(RepairStatus, on_delete=models.SET_NULL, null=True, blank=True)
+    status = models.ForeignKey(RepairStatus, on_delete=models.PROTECT)  # required
     created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"{self.product.name} repair"
+    updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
         is_new = self.pk is None
         super().save(*args, **kwargs)
-        # Create initial movement only on new repair
-        if is_new and self.status:
+
+        # Create movement history
+        if is_new:
             RepairMovement.objects.create(
                 repair=self,
                 product=self.product,
-                from_department=None,  # Initial entry
+                from_department=self.product.current_department,
+                to_vendor=self.repair_vendor,
                 status=self.status,
-                note="Repair entry created"
+                note="Repair created",
             )
+
+        if self.status.name in ["Repaired", "Returned to Stock"]:
+            self.product.status = Status.objects.get(name="In Stock") 
+            self.product.save(update_fields=["status"])
+
+
 
 
 
 class RepairMovement(models.Model):
     repair = models.ForeignKey(RepairLog, on_delete=models.CASCADE, related_name="movements")
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="repair_movements")
-    from_department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, related_name="repair_from_department")
-    to_vendor = models.ForeignKey(Vendor, on_delete=models.SET_NULL, null=True, related_name="repair_to_vendor")
-    status = models.ForeignKey(RepairStatus, on_delete=models.SET_NULL, null=True, blank=True)
+    from_department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, related_name="repair_from")
+    to_vendor = models.ForeignKey(Vendor, on_delete=models.SET_NULL, null=True, blank=True, related_name="repair_to")
+    status = models.ForeignKey(RepairStatus, on_delete=models.SET_NULL, null=True)
     note = models.TextField(blank=True)
     changed_at = models.DateTimeField(auto_now_add=True)
 
@@ -239,6 +246,8 @@ class RepairMovement(models.Model):
 
     def __str__(self):
         return f"{self.product.unique_code} → {self.status.name if self.status else 'Unknown'}"
+
+
 
 
 
