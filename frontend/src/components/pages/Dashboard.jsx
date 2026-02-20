@@ -2,20 +2,22 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { FaBoxOpen, FaTools, FaStore, FaSitemap } from "react-icons/fa";
 import { toast } from "react-toastify";
-import { Pie, Bar } from "react-chartjs-2";
 import {
-  Chart as ChartJS,
-  ArcElement,
+  PieChart,
+  Pie,
+  Cell,
   Tooltip,
   Legend,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-} from "chart.js";
-
-ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement);
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  ResponsiveContainer,
+} from "recharts";
 
 const API = "http://127.0.0.1:8000/api";
+
+const COLORS = ["#3B82F6", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6", "#F472B6"];
 
 function Dashboard() {
   const [loading, setLoading] = useState(true);
@@ -25,8 +27,8 @@ function Dashboard() {
     departments: 0,
     repairs: 0,
   });
-  const [productStatuses, setProductStatuses] = useState({});
-  const [repairsByStatus, setRepairsByStatus] = useState({});
+  const [productStatuses, setProductStatuses] = useState([]);
+  const [repairsByStatus, setRepairsByStatus] = useState([]);
   const [departmentProducts, setDepartmentProducts] = useState([]);
   const [recentProducts, setRecentProducts] = useState([]);
 
@@ -42,7 +44,7 @@ function Dashboard() {
           axios.get(`${API}/repairs/`),
         ]);
 
-        // Basic counts
+        // Summary counts
         setSummary({
           products: productsRes.data.count,
           vendors: vendorsRes.data.count,
@@ -50,33 +52,33 @@ function Dashboard() {
           repairs: repairsRes.data.count,
         });
 
-        // Product Status Breakdown
-        const statuses = {};
+        // Product Status
+        const statusData = {};
         (productsRes.data.results || []).forEach((p) => {
           const name = p.status_name || "Unknown";
-          statuses[name] = (statuses[name] || 0) + 1;
+          statusData[name] = (statusData[name] || 0) + 1;
         });
-        setProductStatuses(statuses);
+        setProductStatuses(Object.entries(statusData).map(([name, value]) => ({ name, value })));
 
-        // Repair Status Breakdown
-        const repairStatus = {};
+        // Repairs by status
+        const repairData = {};
         (repairsRes.data.results || []).forEach((r) => {
           const name = r.status_name || "Unknown";
-          repairStatus[name] = (repairStatus[name] || 0) + 1;
+          repairData[name] = (repairData[name] || 0) + 1;
         });
-        setRepairsByStatus(repairStatus);
+        setRepairsByStatus(Object.entries(repairData).map(([name, value]) => ({ name, value })));
 
-        // Department-wise product count
-        const deptProducts = {};
+        // Department-wise products
+        const deptData = {};
         (productsRes.data.results || []).forEach((p) => {
-          const dept = p.current_department_name || "Unassigned";
-          deptProducts[dept] = (deptProducts[dept] || 0) + 1;
+          const dept = p.department_name || "Unassigned";
+          deptData[dept] = (deptData[dept] || 0) + 1;
         });
         setDepartmentProducts(
-          Object.entries(deptProducts).map(([dept, count]) => ({ dept, count }))
+          Object.entries(deptData).map(([dept, count]) => ({ dept, count }))
         );
 
-        // Recent Products
+        // Recent products
         setRecentProducts((productsRes.data.results || []).slice(0, 5));
       } catch (err) {
         console.error(err);
@@ -109,10 +111,7 @@ function Dashboard() {
             {cards.map((card) => {
               const Icon = card.icon;
               return (
-                <div
-                  key={card.name}
-                  className={`flex items-center p-4 rounded-lg shadow-lg ${card.color} text-white`}
-                >
+                <div key={card.name} className={`flex items-center p-4 rounded-lg shadow-lg ${card.color} text-white`}>
                   <div className="p-3 rounded-full bg-white/20 mr-4">
                     <Icon className="w-6 h-6" />
                   </div>
@@ -129,61 +128,52 @@ function Dashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-6">
             <div className="bg-white p-4 rounded-lg shadow">
               <h2 className="text-lg font-semibold mb-4">Product Status</h2>
-              <Pie
-                data={{
-                  labels: Object.keys(productStatuses),
-                  datasets: [
-                    {
-                      data: Object.values(productStatuses),
-                      backgroundColor: [
-                        "#3B82F6",
-                        "#10B981",
-                        "#F59E0B",
-                        "#EF4444",
-                        "#9CA3AF",
-                      ],
-                    },
-                  ],
-                }}
-              />
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={productStatuses}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={100}
+                    label
+                  >
+                    {productStatuses.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
             </div>
 
             <div className="bg-white p-4 rounded-lg shadow">
               <h2 className="text-lg font-semibold mb-4">Department-wise Products</h2>
-              <Bar
-                data={{
-                  labels: departmentProducts.map((d) => d.dept),
-                  datasets: [
-                    {
-                      label: "Products",
-                      data: departmentProducts.map((d) => d.count),
-                      backgroundColor: "#3B82F6",
-                    },
-                  ],
-                }}
-              />
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={departmentProducts} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
+                  <XAxis dataKey="dept" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="count" fill="#3B82F6" />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </div>
 
-          {/* Recent Products */}
+          {/* Recent Products Table */}
           <div className="bg-white p-4 rounded-lg shadow mt-6">
             <h2 className="text-lg font-semibold mb-4">Recent Products</h2>
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">
-                      Name
-                    </th>
-                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">
-                      Status
-                    </th>
-                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">
-                      Department
-                    </th>
-                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">
-                      Created At
-                    </th>
+                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Name</th>
+                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Status</th>
+                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Department</th>
+                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Created At</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -191,7 +181,7 @@ function Dashboard() {
                     <tr key={p.id} className="hover:bg-gray-50">
                       <td className="px-4 py-2 text-sm text-gray-700">{p.name}</td>
                       <td className="px-4 py-2 text-sm text-gray-700">{p.status_name}</td>
-                      <td className="px-4 py-2 text-sm text-gray-700">{p.current_department_name || "-"}</td>
+                      <td className="px-4 py-2 text-sm text-gray-700">{p.department_name || "-"}</td>
                       <td className="px-4 py-2 text-sm text-gray-700">{new Date(p.created_at).toLocaleDateString()}</td>
                     </tr>
                   ))}
