@@ -88,7 +88,7 @@ function TransferLogs() {
     <div className="max-w-8xl mx-auto p-6 space-y-6">
       {/* Add Transfer Log */}
       <div className="bg-white shadow-xl rounded-2xl p-6">
-        <h2 className="text-xl sm:text-2xl font-bold mb-6">Product Department Transfer</h2>
+        <h2 className="text-xl sm:text-2xl font-bold mb-6">Department Transfer</h2>
         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Product */}
           <div>

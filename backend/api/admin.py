@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import ProductDocument, Vendor, Department, Status, Category, Product, TransferLog, RepairStatus, RepairLog
+from .models import ProductDocument, Vendor, Department, Status, Category, Product, TransferLog, RepairStatus, RepairLog, RepairMovement
 
 @admin.register(Vendor)
 class VendorAdmin(admin.ModelAdmin):
@@ -63,17 +63,25 @@ class TransferLogAdmin(admin.ModelAdmin):
 
 @admin.register(RepairStatus)
 class RepairStatusAdmin(admin.ModelAdmin):
-    list_display = ("name", "product_status", "is_active", "created_at")
-    search_fields = ("name",)
-    list_filter = ("is_active",)
+    list_display = ("name", "product_status", "is_active", "is_final", "created_at")
+    search_fields = ("name", "product_status")
+    list_filter = ("is_active","is_final")
     ordering = ("name",)
 
 
 @admin.register(RepairLog)
 class RepairLogAdmin(admin.ModelAdmin):
     list_display = ("product", "fault_description", "repair_vendor", "sent_date", "received_date", "repair_cost", "status", "created_at")
-    search_fields = ("product__name", "repair_vendor", "status__name")
-    list_filter = ("status",)
+    search_fields = ("product__unique_code", "product__name", "repair_vendor", "status__name")
+    list_filter = ("status", "repair_vendor", "sent_date", "received_date")
     ordering = ("-created_at",)
+
+
+@admin.register(RepairMovement)
+class RepairMovementAdmin(admin.ModelAdmin):
+    list_display = ("product", "repair", "status", "from_department", "to_vendor", "changed_at")
+    search_fields = ("product__unique_code", "product__name", "status__name", "from_department__name", "to_vendor__name")
+    list_filter = ("status", "to_vendor", "changed_at")
+    ordering = ("-changed_at",)
 
 

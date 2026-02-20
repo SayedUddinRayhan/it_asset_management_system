@@ -408,19 +408,30 @@ class RepairLogViewSet(ModelViewSet):
         with transaction.atomic():
             repair = serializer.save()
 
-            # Sync product status
+            # If received_date is set → move to final status
+            if repair.received_date:
+                final_status = RepairStatus.objects.filter(
+                    is_final=True,
+                    is_active=True
+                ).first()
+
+                if final_status and repair.status != final_status:
+                    repair.status = final_status
+                    repair.save(update_fields=["status"])
+
+            # Sync product status using mapping
             if repair.product and repair.status and repair.status.product_status:
                 repair.product.status = repair.status.product_status
                 repair.product.save(update_fields=["status"])
 
-            # Create movement history
+            # Movement history
             RepairMovement.objects.create(
                 repair=repair,
                 product=repair.product,
                 status=repair.status,
-                from_department=repair.product.current_department if hasattr(repair.product, 'current_department') else None,
+                from_department=getattr(repair.product, 'current_department', None),
                 to_vendor=repair.repair_vendor,
-                note="Status updated from repair log"
+                note="Repair status updated"
             )
 
 

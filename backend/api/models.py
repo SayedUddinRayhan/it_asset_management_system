@@ -205,30 +205,12 @@ class RepairLog(models.Model):
     sent_date = models.DateField(null=True, blank=True)
     received_date = models.DateField(null=True, blank=True)
     repair_cost = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    status = models.ForeignKey(RepairStatus, on_delete=models.PROTECT)  # required
+    status = models.ForeignKey(RepairStatus, on_delete=models.PROTECT) 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def save(self, *args, **kwargs):
-        is_new = self.pk is None
-        super().save(*args, **kwargs)
-
-        # Create movement history
-        if is_new:
-            RepairMovement.objects.create(
-                repair=self,
-                product=self.product,
-                from_department=self.product.current_department,
-                to_vendor=self.repair_vendor,
-                status=self.status,
-                note="Repair created",
-            )
-
-        if self.status.name in ["Repaired", "Returned to Stock"]:
-            self.product.status = Status.objects.get(name="In Stock") 
-            self.product.save(update_fields=["status"])
-
-
+    def __str__(self):
+        return f"{self.product.unique_code} - {self.status.name}"
 
 
 
