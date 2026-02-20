@@ -25,6 +25,8 @@ function TransferLogs() {
 
   const API = "http://127.0.0.1:8000/api";
 
+
+
   // Fetch all data
   const fetchAllData = async () => {
     try {
@@ -79,7 +81,7 @@ function TransferLogs() {
 
   const productOptions = allProducts.map((p) => ({
     value: p.id,
-    label: p.name,
+    label: `${p.unique_code} - ${p.name}`,
     current_department: p.current_department,
   }));
   const departmentOptions = allDepartments.map((d) => ({ value: d.id, label: d.name }));

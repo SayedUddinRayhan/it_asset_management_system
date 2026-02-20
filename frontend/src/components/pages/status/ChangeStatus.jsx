@@ -126,7 +126,7 @@ function ChangeStatus() {
           <div>
             <label className="text-sm font-medium mb-1 block">Product</label>
             <Select
-              options={products.map(p => ({ value: p.id, label: p.name }))}
+              options={products.map(p => ({ value: p.id, label: `${p.unique_code} - ${p.name}`}))}
               value={form.product}
               onChange={(v) => handleSelect("product", v)}
               placeholder="Select product..."

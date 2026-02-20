@@ -268,31 +268,31 @@ function RepairLog() {
   ) : filteredLogs.length === 0 ? (
     <p>No repair records found</p>
   ) : (
-    <table className="min-w-full border border-gray-200 divide-y divide-gray-200">
+    <table className="min-w-full border border-gray-200 divide-y divide-gray-200 table-auto">
       <thead className="bg-gray-50">
         <tr>
-          <th className="px-6 py-3 border-b text-left text-sm font-medium text-gray-700">
+          <th className="px-4 py-3 border-b text-left text-sm font-medium text-gray-700">
             SL
           </th>
-          <th className="px-6 py-3 border-b text-left text-sm font-medium text-gray-700">
+          <th className="px-4 py-3 border-b text-left text-sm font-medium text-gray-700">
             Product
           </th>
-          <th className="px-6 py-3 border-b text-left text-sm font-medium text-gray-700">
+          <th className="px-4 py-3 border-b text-left text-sm font-medium text-gray-700">
             Fault
           </th>
-          <th className="px-6 py-3 border-b text-left text-sm font-medium text-gray-700">
+          <th className="px-4 py-3 border-b text-left text-sm font-medium text-gray-700">
             Vendor
           </th>
-          <th className="px-6 py-3 border-b text-left text-sm font-medium text-gray-700">
+          <th className="px-4 py-3 border-b text-left text-sm font-medium text-gray-700">
             Sent
           </th>
-          <th className="px-6 py-3 border-b text-left text-sm font-medium text-gray-700">
+          <th className="px-4 py-3 border-b text-left text-sm font-medium text-gray-700">
             Received
           </th>
-          <th className="px-6 py-3 border-b text-left text-sm font-medium text-gray-700">
+          <th className="px-4 py-3 border-b text-left text-sm font-medium text-gray-700">
             Repair Cost
           </th>
-          <th className="px-6 py-3 border-b text-center text-sm font-medium text-gray-700">
+          <th className="px-4 py-3 border-b text-center text-sm font-medium text-gray-700">
             Actions
           </th>
         </tr>
@@ -301,20 +301,20 @@ function RepairLog() {
       <tbody className="bg-white divide-y divide-gray-200">
         {filteredLogs.map((log, index) => (
           <tr key={log.id} className="hover:bg-gray-50">
-            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+            <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-700">
               {index + 1}
             </td>
 
-            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+            <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-700">
               {log.product_name}
             </td>
 
-            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+            <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-700">
               {log.fault_description}
             </td>
 
             {/* Vendor */}
-            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 w-56">
+            <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-700 w-56">
               {!log.sent_date ? (
                 <Select
                   placeholder="Select Vendor"
@@ -345,12 +345,12 @@ function RepairLog() {
             </td>
 
             {/* Sent */}
-            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+            <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
               {log.sent_date || "-"}
             </td>
 
             {/* Received */}
-            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+            <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-700">
               {activeTab === "Sent to Vendor" ? (
                 <input
                   type="date"
@@ -374,7 +374,7 @@ function RepairLog() {
             </td>
 
             {/* Cost */}
-            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+            <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-700">
               {activeTab === "Sent to Vendor" ? (
                 <input
                   type="number"
@@ -401,7 +401,7 @@ function RepairLog() {
             </td>
 
             {/* Actions */}
-            <td className="px-6 py-4 whitespace-nowrap text-sm flex gap-2 justify-center">
+            <td className="px-4 py-4 whitespace-nowrap text-sm flex gap-2 justify-center">
               {!log.sent_date && (
                 <button
                   onClick={() => handleSendToVendor(log)}
