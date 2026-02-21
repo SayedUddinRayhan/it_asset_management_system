@@ -6,6 +6,9 @@ from .serializers import VendorSerializer, DepartmentSerializer, StatusSerialize
 from rest_framework.response import Response
 from rest_framework import status
 from django.db import transaction
+from django.db.models import Count
+from django.db.models import Sum
+from django.db.models.functions import Coalesce
 
 import io
 import pandas as pd
@@ -166,7 +169,6 @@ class ProductExportExcelView(APIView):
                 "Department": p.current_department.name if p.current_department else "",
                 "Vendor": p.vendor.name if p.vendor else "",
                 "Price": float(p.price),
-                "Quantity": p.quantity,
                 "Purchase Date": p.purchase_date.strftime("%d-%m-%Y") if p.purchase_date else "",
                 "Warranty": f"{p.warranty_years} years" if p.warranty_years else "",
                 "Warranty End": p.warranty_end_date.strftime("%d-%m-%Y") if p.warranty_end_date else "",
@@ -452,3 +454,62 @@ class RepairMovementViewSet(ModelViewSet):
     ordering = ["-changed_at"]
 
 
+
+
+
+# views.py
+from rest_framework import viewsets
+from rest_framework.response import Response
+from django.db.models import Sum, Count, F, DecimalField
+from .models import Product, RepairLog, TransferLog, Vendor, Department, Status, Category
+
+class DashboardViewSet(viewsets.ViewSet):
+
+    def list(self, request):
+        try:
+            # ================= SUMMARY =================
+            summary = {
+                "total_products": Product.objects.filter(is_active=True).count(),
+                "total_repairs": RepairLog.objects.filter(is_active=True).count(),
+                "total_transfers": TransferLog.objects.filter(product__is_active=True).count(),
+                "total_vendors": Vendor.objects.filter(is_active=True).count(),
+                "total_departments": Department.objects.filter(is_active=True).count(),
+                "total_categories": Category.objects.filter(is_active=True).count(),
+                "total_product_value": Product.objects.aggregate(
+                    total=Sum(F("price"), output_field=DecimalField())
+                )["total"] or 0,
+                "total_repair_cost": RepairLog.objects.aggregate(
+                    total=Sum(F("repair_cost"), output_field=DecimalField())
+                )["total"] or 0,
+            }
+
+            department_products = (
+                Product.objects.filter(is_active=True)
+                .values(dept=F('current_department__name'))
+                .annotate(count=Count('id'))
+                .order_by('dept')
+            )
+
+            product_status_counts = Product.objects.filter(is_active=True).values(status_name=F('status__name')).annotate(value=Count('id'))
+
+            
+            repair_status_counts = RepairLog.objects.filter(is_active=True).values("status__name").annotate(
+                value=Count("id")
+            )
+            product_category_counts = Product.objects.filter(is_active=True).values("category__name").annotate(
+                value=Count("id")
+            )
+            product_vendor_counts = Product.objects.filter(is_active=True).values("vendor__name").annotate(
+                value=Count("id")
+            )
+
+            return Response({
+                "summary": summary,
+                "department_products": list(department_products),
+                "repair_status_counts": list(repair_status_counts),
+                "product_category_counts": list(product_category_counts),
+                "product_vendor_counts": list(product_vendor_counts),
+                "product_status_counts": list(product_status_counts),
+            })
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)

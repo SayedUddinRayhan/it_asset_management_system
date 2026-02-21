@@ -2,7 +2,6 @@ import { NavLink, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import {
   FaTachometerAlt,
-  FaBoxOpen,
   FaStore,
   FaSitemap,
   FaTags,
@@ -12,6 +11,7 @@ import {
   FaListAlt,
   FaChevronDown,
   FaClipboardCheck,
+  FaWarehouse,
 } from "react-icons/fa";
 
 function Sidebar({ sidebarOpen, setSidebarOpen, sidebarCollapsed, setSidebarCollapsed }) {
@@ -20,7 +20,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen, sidebarCollapsed, setSidebarColl
 
   const menuItems = [
     { name: "Dashboard", path: "/", icon: FaTachometerAlt },
-    { name: "Products", path: "/products", icon: FaBoxOpen },
+    { name: "Products", path: "/products", icon: FaWarehouse },
     { name: "Vendors", path: "/vendors", icon: FaStore },
     { name: "Departments", path: "/departments", icon: FaSitemap },
     { name: "Categories", path: "/categories", icon: FaTags },

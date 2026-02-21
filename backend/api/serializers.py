@@ -46,7 +46,7 @@ class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = ['id', 'unique_code', 'name', 'model_number', 'serial_number', 'description', 'purchase_date', 'warranty_years', 
-                  'warranty_end_date', 'quantity', 'price', 'vendor', 'current_department', 'category', 
+                  'warranty_end_date', 'price', 'vendor', 'current_department', 'category', 
                   'status', 'created_at', 'updated_at',
                   'vendor_name', 'department_name', 'category_name', 'status_name', 'documents']
 

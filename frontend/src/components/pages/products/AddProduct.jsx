@@ -21,7 +21,6 @@ function AddProduct() {
     description: "",
     purchase_date: null,
     warranty_years: "",
-    quantity: 1,
     price: "",
     documents: [],
   });
@@ -85,7 +84,6 @@ function AddProduct() {
           : ""
       );
       data.append("warranty_years", form.warranty_years);
-      data.append("quantity", form.quantity);
       data.append("price", form.price);
       
       if (form.documents) {
@@ -230,22 +228,6 @@ function AddProduct() {
             />
           </div>
 
-          {/* Quantity */}
-          <div className="flex flex-col">
-            <label className="text-sm font-medium text-gray-700 mb-1">
-              Quantity
-            </label>
-            <input
-              type="number"
-              name="quantity"
-              min={1}
-              required
-              placeholder="Quantity"
-              className={inputStyle}
-              defaultValue={1}
-              onChange={handleInput}
-            />
-          </div>
 
           {/* Price */}
           <div className="flex flex-col">

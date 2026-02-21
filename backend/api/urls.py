@@ -1,5 +1,5 @@
 from rest_framework.routers import DefaultRouter
-from .views import VendorViewSet, DepartmentViewSet, StatusViewSet, CategoryViewSet, ProductViewSet, ProductDocumentViewSet, TransferLogViewSet, RepairStatusViewSet, RepairLogViewSet, ProductExportExcelView, ProductExportPDFView
+from .views import VendorViewSet, DepartmentViewSet, StatusViewSet, CategoryViewSet, ProductViewSet, ProductDocumentViewSet, TransferLogViewSet, RepairStatusViewSet, RepairLogViewSet, ProductExportExcelView, ProductExportPDFView, DashboardViewSet
 from django.urls import path
 
 router = DefaultRouter()
@@ -12,6 +12,7 @@ router.register(r'products/(?P<product_id>\d+)/documents', ProductDocumentViewSe
 router.register(r'transfers', TransferLogViewSet, basename='transfer')
 router.register(r'repair-statuses', RepairStatusViewSet, basename='repair-status')
 router.register(r'repairs', RepairLogViewSet, basename='repair')
+router.register(r'dashboard', DashboardViewSet, basename='dashboard')
 
 
 export_routes = [

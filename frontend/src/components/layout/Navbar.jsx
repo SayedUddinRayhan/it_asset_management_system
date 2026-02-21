@@ -60,15 +60,14 @@ function Navbar({ onMobileMenuToggle }) {
           <HiOutlineMenu className="w-6 h-6 text-gray-700" />
         </button>
 
-        <span className="text-gray-800 font-bold truncate text-sm sm:text-base md:text-lg lg:text-xl flex-shrink-0">
+        <span className="text-gray-500 font-bold truncate text-sm sm:text-base md:text-lg lg:text-xl flex-shrink-0">
         {formatDateTime(currentTime)}
         </span>
       </div>
 
-      {/* Right: Search + Profile */}
+      {/* Search + Profile */}
       <div className="flex items-center gap-2 flex-1 min-w-0 justify-end">
-
-        {/* Desktop & Tablet Search Input */}
+        {/* Desktop & Tablet Search Input
         <div className="hidden sm:flex gap-2 items-center max-w-[50%] lg:max-w-sm flex-shrink-0">
           <div className="relative flex-1 min-w-0">
             <input
@@ -84,15 +83,15 @@ function Navbar({ onMobileMenuToggle }) {
           >
             Search
           </button>
-        </div>
+        </div> */}
 
         {/* Mobile Search Icon */}
-        <button
+        {/* <button
           className="sm:hidden flex-shrink-0 p-2 rounded hover:bg-gray-200"
           onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
         >
           <FaSearch className="w-5 h-5 text-gray-700" />
-        </button>
+        </button> */}
 
         {/* Profile Dropdown */}
         <div className="relative ml-2 flex-shrink-0" ref={profileRef}>

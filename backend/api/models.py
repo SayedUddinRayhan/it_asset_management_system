@@ -133,7 +133,6 @@ class Product(models.Model):
     purchase_date = models.DateField(null=True, blank=True)
     warranty_years = models.PositiveIntegerField(null=True, blank=True) 
     warranty_end_date = models.DateField(null=True, blank=True)
-    quantity = models.PositiveIntegerField(default=1)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     status = models.ForeignKey(Status, on_delete=models.PROTECT)
     is_active = models.BooleanField(default=True)
@@ -206,6 +205,7 @@ class RepairLog(models.Model):
     received_date = models.DateField(null=True, blank=True)
     repair_cost = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     status = models.ForeignKey(RepairStatus, on_delete=models.PROTECT) 
+    is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

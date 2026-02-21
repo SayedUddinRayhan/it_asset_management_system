@@ -21,7 +21,6 @@ function EditProduct() {
     description: "",
     purchase_date: null,
     warranty_years: "",
-    quantity: 0,
     price: 0,
     documents: [],
   });
@@ -73,7 +72,6 @@ function EditProduct() {
         description: p.description,
         purchase_date: p.purchase_date ? new Date(p.purchase_date) : null,
         warranty_years: p.warranty_years,
-        quantity: p.quantity,
         price: p.price,
         documents: [],
       });
@@ -118,7 +116,6 @@ function EditProduct() {
         form.purchase_date ? form.purchase_date.toISOString().split("T")[0] : ""
       );
       data.append("warranty_years", form.warranty_years);
-      data.append("quantity", form.quantity);
       data.append("price", form.price);
 
 
@@ -201,19 +198,6 @@ function EditProduct() {
           </div>
 
 
-          {/* Quantity */}
-          <div className="flex flex-col">
-            <label className="text-sm font-medium text-gray-700 mb-1">Quantity</label>
-            <input
-              type="number"
-              name="quantity"
-              value={form.quantity}
-              min={1}
-              required
-              className="border border-gray-300 rounded-lg px-3 py-2 outline-none w-full text-sm"
-              onChange={handleInput}
-            />
-          </div>
 
           {/* Price */}
           <div className="flex flex-col">
