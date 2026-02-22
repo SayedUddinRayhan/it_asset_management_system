@@ -1,6 +1,6 @@
 from rest_framework.routers import DefaultRouter
 from .views import VendorViewSet, DepartmentViewSet, StatusViewSet, CategoryViewSet, ProductViewSet, ProductDocumentViewSet, TransferLogViewSet, RepairStatusViewSet, RepairLogViewSet, ProductExportExcelView, ProductExportPDFView, DashboardViewSet
-from django.urls import path
+from django.urls import path, include
 
 router = DefaultRouter()
 router.register(r'vendors', VendorViewSet, basename='vendor')
@@ -16,6 +16,7 @@ router.register(r'dashboard', DashboardViewSet, basename='dashboard')
 
 
 export_routes = [
+    path('accounts/', include('accounts.urls')),
     path('export/products/excel/', ProductExportExcelView.as_view(), name='export-products-excel'),
     path('export/products/pdf/', ProductExportPDFView.as_view(), name='export-products-pdf'),
 ]
