@@ -29,6 +29,7 @@ SECRET_KEY = env.str("SECRET_KEY")
 ALLOWED_HOSTS = []
 
 
+AUTH_USER_MODEL = "accounts.User"
 # Application definition
 
 INSTALLED_APPS = [
@@ -43,9 +44,12 @@ INSTALLED_APPS = [
     'django_filters',
     'autoslug',
     'corsheaders',
+    'accounts',
+    "rest_framework_simplejwt.token_blacklist",
 ]
 
 MIDDLEWARE = [
+    'rest_framework_simplejwt.authentication.JWTAuthentication',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
