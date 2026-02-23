@@ -16,7 +16,6 @@ router.register(r'dashboard', DashboardViewSet, basename='dashboard')
 
 
 export_routes = [
-    path('accounts/', include('accounts.urls')),
     path('export/products/excel/', ProductExportExcelView.as_view(), name='export-products-excel'),
     path('export/products/pdf/', ProductExportPDFView.as_view(), name='export-products-pdf'),
 ]
