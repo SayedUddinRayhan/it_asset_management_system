@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { toast } from "react-toastify";
+
+import { FaSpinner } from "react-icons/fa";
 
 function Login() {
   const navigate = useNavigate();
@@ -25,7 +28,7 @@ function Login() {
     e.preventDefault();
     setFormError(null);
 
-    // Minimal frontend validation
+    // validation
     if (!credentials.phone || !credentials.password) {
       setFormError("Phone and password are required.");
       return;
@@ -33,10 +36,9 @@ function Login() {
 
     try {
       await login(credentials);
-      navigate("/"); // Redirect to dashboard/home after login
+      navigate("/", { state: { loginSuccess: true } });
     } catch (err) {
       console.error(err);
-      // formError will be shown automatically from authError
     }
   };
 
@@ -89,14 +91,21 @@ function Login() {
           </div>
 
           <button
-            type="submit"
-            disabled={isAuthLoading}
-            className={`w-full py-2 px-4 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition ${
-              isAuthLoading ? "opacity-50 cursor-not-allowed" : ""
-            }`}
-          >
-            {isAuthLoading ? "Logging in..." : "Login"}
-          </button>
+              type="submit"
+              disabled={isAuthLoading}
+              className={`w-full py-2 px-4 bg-blue-600 text-white font-semibold rounded-lg flex items-center justify-center gap-2 transition ${
+                isAuthLoading ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-700"
+              }`}
+            >
+              {isAuthLoading ? (
+                <>
+                  <FaSpinner className="animate-spin" />
+                  Logging in...
+                </>
+              ) : (
+                "Login"
+              )}
+            </button>
         </form>
 
         <p className="text-sm text-center mt-4 text-gray-500">

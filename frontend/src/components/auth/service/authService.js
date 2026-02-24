@@ -31,12 +31,12 @@ export const authService = {
   },
 
   // Register
-  async register({ phone, firstName, lastName, password }) {
+  async register({ phone, first_name, last_name, password }) {
     try {
       await axios.post(`${BASE_URL}/auth/register/`, {
         phone,
-        first_name: firstName,
-        last_name: lastName,
+        first_name,
+        last_name,
         password,
       });
       return this.login({ phone, password });

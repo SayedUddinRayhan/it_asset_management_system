@@ -55,6 +55,7 @@ export const AuthProvider = ({ children }) => {
   // Login user
   const login = async (credentials) => {
     setAuthError(null);
+    setIsAuthLoading(true); 
     try {
       const response = await authService.login(credentials);
       setUser(response.user);
@@ -62,6 +63,8 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       setAuthError(err.message || "Login failed");
       throw err;
+    } finally {
+      setIsAuthLoading(false); 
     }
   };
 

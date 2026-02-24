@@ -25,20 +25,32 @@ class RegisterSerializer(serializers.ModelSerializer):
         return value
 
     def create(self, validated_data):
-        password = validated_data.pop("password")
-        user = User(**validated_data)
-        user.set_password(password)
-        user.save()
-        return user
+        return User.objects.create_user(
+            phone=validated_data["phone"],
+            password=validated_data["password"],
+            first_name=validated_data.get("first_name", ""),
+            last_name=validated_data.get("last_name", "")
+        )
     
 
 class CustomTokenSerializer(TokenObtainPairSerializer):
-    username_field = User.USERNAME_FIELD 
-
+    username_field = "phone"
     @classmethod
     def get_token(cls, user):
-        token = super().get_token(user)
-        token["phone"] = user.phone
-        token["first_name"] = user.first_name
-        token["last_name"] = user.last_name
-        return token
+        return super().get_token(user)
+
+    def validate(self, attrs):
+        data = super().validate(attrs)
+
+        return {
+            "tokens": {
+                "access": data["access"],
+                "refresh": data["refresh"],
+            },
+            "user": {
+                "id": self.user.id,
+                "phone": self.user.phone,
+                "first_name": self.user.first_name,
+                "last_name": self.user.last_name,
+            }
+        }

@@ -1,5 +1,6 @@
 // Dashboard.jsx
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import axios from "axios";
 import { 
   FaBoxOpen, 
@@ -52,6 +53,13 @@ export default function Dashboard() {
     in_stock: 0,
     in_use: 0,
   });
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.state?.loginSuccess) {
+      toast.success("Login successful");
+    }
+  }, [location.state]);
 
   useEffect(() => {
     const fetchDashboard = async () => {

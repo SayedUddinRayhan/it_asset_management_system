@@ -1,3 +1,5 @@
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./components/auth/context/AuthContext";
 
@@ -27,8 +29,6 @@ function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        {/* Navbar shown globally */}
-        <Navbar />
 
         <Routes>
           {/* Public Routes */}
@@ -61,6 +61,8 @@ function App() {
           {/* Catch-all route */}
           <Route path="*" element={<Dashboard />} />
         </Routes>
+
+        <ToastContainer position="top-right" autoClose={2000} />
       </BrowserRouter>
     </AuthProvider>
   );
