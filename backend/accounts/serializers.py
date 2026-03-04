@@ -2,6 +2,8 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from django.contrib.auth.models import Permission
+
 
 User = get_user_model()
 
@@ -54,3 +56,28 @@ class CustomTokenSerializer(TokenObtainPairSerializer):
                 "last_name": self.user.last_name,
             }
         }
+
+
+
+
+# serializers.py
+class PermissionSerializer(serializers.ModelSerializer):
+    content_type = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Permission
+        fields = ["id", "name", "codename", "content_type"]  # 🔥 Added content_type
+    
+    def get_content_type(self, obj):
+        # Return minimal info React needs
+        return {
+            "model": obj.content_type.model if obj.content_type else None,
+            "app_label": obj.content_type.app_label if obj.content_type else None
+        }
+
+class UserPermissionSerializer(serializers.ModelSerializer):
+    permissions = PermissionSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = User
+        fields = ["id", "phone", "first_name", "last_name", "permissions"]

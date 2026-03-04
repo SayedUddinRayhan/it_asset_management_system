@@ -21,6 +21,8 @@ import ChangeStatus from "./components/pages/status/ChangeStatus";
 import RepairStatuses from "./components/pages/RapairStatuses";
 import TransferLog from "./components/pages/TransferLog";
 import RepairLog from "./components/pages/RepairLog";
+import Users from "./components/pages/Users";
+import UserPermissions from "./components/pages/UserPermissions";
 
 // Protected Route Wrapper
 import ProtectedRoute from "./components/common/ProtectedRoute";
@@ -45,6 +47,8 @@ function App() {
             }
           >
             <Route index element={<Dashboard />} />
+            <Route path="/users" element={<Users />} />
+            <Route path="/users/:id/permissions" element={<UserPermissions />} />
             <Route path="products" element={<Products />} />
             <Route path="products/new" element={<AddProduct />} />
             <Route path="products/edit/:id" element={<EditProduct />} />

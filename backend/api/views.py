@@ -25,9 +25,18 @@ from openpyxl.styles import Font, Alignment
 from openpyxl.utils import get_column_letter
 
 
+from rest_framework import viewsets
+from rest_framework.response import Response
+from django.db.models import Sum, Count, F, DecimalField
+from .models import Product, RepairLog, TransferLog, Vendor, Department, Status, Category
+
+from rest_framework.permissions import IsAuthenticated, DjangoModelPermissions 
+
+
 class VendorViewSet(ModelViewSet):
     queryset = Vendor.objects.filter(is_active=True).order_by("-created_at")
     serializer_class = VendorSerializer
+    permission_classes = [IsAuthenticated, DjangoModelPermissions] 
 
     filter_backends = [SearchFilter, OrderingFilter]
     search_fields = ["unique_code", "name"]
@@ -41,6 +50,7 @@ class VendorViewSet(ModelViewSet):
 class DepartmentViewSet(ModelViewSet):
     queryset = Department.objects.filter(is_active=True).order_by("-created_at")
     serializer_class = DepartmentSerializer
+    permission_classes = [IsAuthenticated, DjangoModelPermissions] 
 
     filter_backends = [SearchFilter, OrderingFilter]
     search_fields = ["unique_code", "name"]
@@ -54,7 +64,7 @@ class DepartmentViewSet(ModelViewSet):
 class StatusViewSet(ModelViewSet):
     queryset = Status.objects.filter(is_active=True).order_by("name")
     serializer_class = StatusSerializer
-
+    permission_classes = [IsAuthenticated, DjangoModelPermissions] 
     filter_backends = [SearchFilter, OrderingFilter]
     search_fields = ["unique_code", "name"]
     ordering_fields = ["name", "created_at"]
@@ -67,7 +77,7 @@ class StatusViewSet(ModelViewSet):
 class CategoryViewSet(ModelViewSet):
     queryset = Category.objects.filter(is_active=True).order_by("name")
     serializer_class = CategorySerializer
-
+    permission_classes = [IsAuthenticated, DjangoModelPermissions] 
     filter_backends = [SearchFilter, OrderingFilter]
     search_fields = ["unique_code", "name"]
     ordering_fields = ["name", "created_at"]
@@ -81,6 +91,7 @@ class ProductViewSet(ModelViewSet):
         "vendor", "current_department", "status"
     ).prefetch_related("documents").order_by("-created_at")
     serializer_class = ProductSerializer
+    permission_classes = [IsAuthenticated, DjangoModelPermissions] 
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ["status", "category", "current_department"]
     search_fields = ["unique_code", "name", "vendor__name", "current_department__name", "warranty_years"]
@@ -125,6 +136,7 @@ class ProductViewSet(ModelViewSet):
 
 class ProductDocumentViewSet(ModelViewSet):
     serializer_class = ProductDocumentSerializer
+    permission_classes = [IsAuthenticated, DjangoModelPermissions] 
 
     def get_queryset(self):
         product_id = self.kwargs.get("product_id")
@@ -352,6 +364,7 @@ class TransferLogViewSet(ModelViewSet):
         "product", "from_department", "to_department"
     ).order_by("-created_at")
     serializer_class = TransferLogSerializer
+    permission_classes = [IsAuthenticated, DjangoModelPermissions] 
     filter_backends = [SearchFilter]
     search_fields = ['product__unique_code', 'product__name', 'from_department__name', 'to_department__name']
 
@@ -370,7 +383,7 @@ class TransferLogViewSet(ModelViewSet):
 class RepairStatusViewSet(ModelViewSet):
     queryset = RepairStatus.objects.filter(is_active=True).order_by("-created_at")
     serializer_class = RepairStatusSerializer
-
+    permission_classes = [IsAuthenticated, DjangoModelPermissions] 
     filter_backends = [SearchFilter, OrderingFilter]
     search_fields = ["name"]
     ordering_fields = ["name", "created_at"]
@@ -386,7 +399,7 @@ class RepairLogViewSet(ModelViewSet):
     queryset = RepairLog.objects.select_related("product", "status", "repair_vendor").order_by("-created_at")
     serializer_class = RepairLogSerializer
     pagination_class = None 
-
+    permission_classes = [IsAuthenticated, DjangoModelPermissions] 
     def perform_create(self, serializer):
         with transaction.atomic():
             repair = serializer.save()
@@ -443,7 +456,7 @@ class RepairMovementViewSet(ModelViewSet):
         "product", "repair", "status", "to_vendor", "from_department"
     ).order_by("-changed_at")
     serializer_class = RepairMovementSerializer
-
+    permission_classes = [IsAuthenticated, DjangoModelPermissions] 
     filter_backends = [SearchFilter, OrderingFilter]
     search_fields = [
         "product__name",
@@ -457,11 +470,6 @@ class RepairMovementViewSet(ModelViewSet):
 
 
 
-# views.py
-from rest_framework import viewsets
-from rest_framework.response import Response
-from django.db.models import Sum, Count, F, DecimalField
-from .models import Product, RepairLog, TransferLog, Vendor, Department, Status, Category
 
 class DashboardViewSet(viewsets.ViewSet):
 

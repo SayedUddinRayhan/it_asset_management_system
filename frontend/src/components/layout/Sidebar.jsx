@@ -12,6 +12,7 @@ import {
   FaChevronDown,
   FaClipboardCheck,
   FaWarehouse,
+  FaUsers,
 } from "react-icons/fa";
 
 function Sidebar({ sidebarOpen, setSidebarOpen, sidebarCollapsed, setSidebarCollapsed }) {
@@ -35,6 +36,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen, sidebarCollapsed, setSidebarColl
       ],
     },
     { name: "Repair Statuses", path: "/repair-statuses", icon: FaClipboardCheck },
+    { name: "Users", path: "/users", icon: FaUsers },
   ];
 
   const isSubmenuActive = (submenu) =>
