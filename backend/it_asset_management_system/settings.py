@@ -45,8 +45,13 @@ INSTALLED_APPS = [
     'django_filters',
     'autoslug',
     'corsheaders',
-    'accounts',
     "rest_framework_simplejwt.token_blacklist",
+
+    'accounts',
+    'chatbot',
+    
+
+
 ]
 
 MIDDLEWARE = [
@@ -109,6 +114,8 @@ DATABASES = {
         'PORT': env('DB_PORT'),
     }
 }
+# Database URL for LangChain SQL Agent
+DATABASE_URL = f"postgresql://{env('DB_USER')}:{env('DB_PASSWORD')}@{env('DB_HOST')}:{env('DB_PORT')}/{env('DB_NAME')}"
 
 
 # Password validation
