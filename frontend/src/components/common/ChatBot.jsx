@@ -7,10 +7,10 @@ const WELCOME = {
 };
 
 const SUGGESTIONS = [
-  "How many assets do we have?",
-  "Which laptops are unassigned?",
-  "Assets with expired warranties?",
-  "Show assets by department",
+  "How many products do we have?",
+  "Show all products by category",
+  "Products with expired warranties?",
+  "Show products by department",
 ];
 
 function TypingDots() {
@@ -134,7 +134,7 @@ export default function ChatBot() {
               <p className="font-semibold text-sm">IT Asset Assistant</p>
               <p className="text-blue-200 text-xs flex items-center gap-1">
                 <span className="w-1.5 h-1.5 bg-green-400 rounded-full" />
-                Llama 3 · SQL Agent
+                Claude Haiku · SQL Agent
               </p>
             </div>
             <button
