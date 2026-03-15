@@ -3,9 +3,94 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { FaSpinner, FaShieldAlt } from "react-icons/fa";
+import { FaSpinner, FaShieldAlt, FaChevronDown, FaChevronRight } from "react-icons/fa";
+
+// ── Menu-based grouping config ────────────────────────────────────────────────
+// Maps sidebar menu labels → the Django model names that belong to that menu.
+// Any model NOT listed here is treated as a system internal and hidden.
+const MENU_GROUPS = [
+  {
+    label: "Products",
+    icon: "📦",
+    models: ["product", "productdocument"],
+  },
+  {
+    label: "Categories",
+    icon: "🏷️",
+    models: ["category"],
+  },
+  {
+    label: "Departments",
+    icon: "🏢",
+    models: ["department"],
+  },
+  {
+    label: "Vendors",
+    icon: "🤝",
+    models: ["vendor"],
+  },
+  {
+    label: "Repairs",
+    icon: "🔧",
+    models: ["repairlog", "repairstatus", "repairmovement"],
+  },
+  {
+    label: "Transfers",
+    icon: "🔁",
+    models: ["transferlog"],
+  },
+  {
+    label: "Statuses",
+    icon: "🔘",
+    models: ["status"],
+  },
+  {
+    label: "Users",
+    icon: "👥",
+    models: ["user"],
+  },
+];
+
+// Flat set of all allowed models for quick lookup
+const ALLOWED_MODELS = new Set(MENU_GROUPS.flatMap((g) => g.models));
 
 const ACTIONS = ["add", "edit", "view", "delete"];
+
+const ACTION_LABELS = {
+  add: "Add",
+  edit: "Edit",
+  view: "View",
+  delete: "Delete",
+};
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function isGroupFullySelected(group, permissionsByModel) {
+  return group.models.every((model) => {
+    const actions = permissionsByModel[model];
+    if (!actions) return true; // no perms for this model → skip
+    return Object.values(actions).every(
+      (arr) => arr.length === 0 || arr.every((p) => p.assigned)
+    );
+  });
+}
+
+function countGroupSelected(group, permissionsByModel) {
+  let selected = 0;
+  let total = 0;
+  group.models.forEach((model) => {
+    const actions = permissionsByModel[model] || {};
+    Object.values(actions).forEach((arr) => {
+      arr.forEach((p) => {
+        total++;
+        if (p.assigned) selected++;
+      });
+    });
+  });
+  return { selected, total };
+}
+
+// ── Component ─────────────────────────────────────────────────────────────────
 
 function UserPermissions() {
   const { id } = useParams();
@@ -16,14 +101,14 @@ function UserPermissions() {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [collapsed, setCollapsed] = useState({}); // { groupLabel: bool }
 
   const token = localStorage.getItem("access_token");
   const config = { headers: { Authorization: `Bearer ${token}` } };
 
-  // Derived — never stored separately to avoid stale state
   const isSuperuser = userData?.is_superuser === true;
 
-  // ── Data fetching ────────────────────────────────────────────────────────────
+  // ── Fetch ─────────────────────────────────────────────────────────────────
 
   const fetchPermissions = async () => {
     setLoading(true);
@@ -40,10 +125,13 @@ function UserPermissions() {
       const userPermIds = (userRes.data.permissions || []).map((p) => p.id);
       setUserData(userRes.data);
 
-      // Group all permissions by model → action
       const grouped = {};
       allPermissions.forEach((perm) => {
         const modelName = perm.content_type?.model || "unknown";
+
+        // Skip system internals not in our allowed list
+        if (!ALLOWED_MODELS.has(modelName)) return;
+
         if (!grouped[modelName]) {
           grouped[modelName] = { add: [], edit: [], view: [], delete: [] };
         }
@@ -79,7 +167,7 @@ function UserPermissions() {
     fetchPermissions();
   }, [id]);
 
-  // ── Toggle helpers ───────────────────────────────────────────────────────────
+  // ── Toggle helpers ────────────────────────────────────────────────────────
 
   const togglePermission = (model, action, permId) => {
     if (isSuperuser) return;
@@ -94,32 +182,33 @@ function UserPermissions() {
     }));
   };
 
-  const toggleAllForModel = (model) => {
+  const toggleAllForGroup = (group) => {
     if (isSuperuser) return;
+    const fullySelected = isGroupFullySelected(group, permissionsByModel);
     setPermissionsByModel((prev) => {
-      const actions = prev[model];
-      // If everything is already assigned, clear; otherwise assign all
-      const allAssigned = Object.values(actions).every((arr) =>
-        arr.every((p) => p.assigned)
-      );
-      const newActions = {};
-      Object.keys(actions).forEach((action) => {
-        newActions[action] = actions[action].map((p) => ({
-          ...p,
-          assigned: !allAssigned,
-        }));
+      const next = { ...prev };
+      group.models.forEach((model) => {
+        if (!next[model]) return;
+        const newActions = {};
+        Object.keys(next[model]).forEach((action) => {
+          newActions[action] = next[model][action].map((p) => ({
+            ...p,
+            assigned: !fullySelected,
+          }));
+        });
+        next[model] = newActions;
       });
-      return { ...prev, [model]: newActions };
+      return next;
     });
   };
 
   const toggleAllPermissions = () => {
     if (isSuperuser) return;
+    const allAssigned = MENU_GROUPS.every((g) =>
+      isGroupFullySelected(g, permissionsByModel)
+    );
     setPermissionsByModel((prev) => {
-      const allAssigned = Object.values(prev).every((actions) =>
-        Object.values(actions).every((arr) => arr.every((p) => p.assigned))
-      );
-      const newState = {};
+      const next = {};
       Object.keys(prev).forEach((model) => {
         const newActions = {};
         Object.keys(prev[model]).forEach((action) => {
@@ -128,24 +217,23 @@ function UserPermissions() {
             assigned: !allAssigned,
           }));
         });
-        newState[model] = newActions;
+        next[model] = newActions;
       });
-      return newState;
+      return next;
     });
   };
 
-  // ── Derived state ────────────────────────────────────────────────────────────
+  const toggleCollapse = (label) => {
+    setCollapsed((prev) => ({ ...prev, [label]: !prev[label] }));
+  };
 
-  const allSelected = Object.values(permissionsByModel).every((actions) =>
-    Object.values(actions).every((arr) => arr.every((p) => p.assigned))
+  // ── Derived ───────────────────────────────────────────────────────────────
+
+  const allSelected = MENU_GROUPS.every((g) =>
+    isGroupFullySelected(g, permissionsByModel)
   );
 
-  const isModelFullySelected = (model) =>
-    Object.values(permissionsByModel[model] || {}).every((arr) =>
-      arr.length > 0 && arr.every((p) => p.assigned)
-    );
-
-  // ── Save ─────────────────────────────────────────────────────────────────────
+  // ── Save ──────────────────────────────────────────────────────────────────
 
   const handleSave = async () => {
     if (isSuperuser) return;
@@ -154,7 +242,9 @@ function UserPermissions() {
       const selectedIds = [];
       Object.values(permissionsByModel).forEach((actions) => {
         Object.values(actions).forEach((arr) => {
-          arr.forEach((p) => { if (p.assigned) selectedIds.push(p.id); });
+          arr.forEach((p) => {
+            if (p.assigned) selectedIds.push(p.id);
+          });
         });
       });
 
@@ -167,14 +257,13 @@ function UserPermissions() {
       navigate("/users");
     } catch (err) {
       console.error(err);
-      const msg = err.response?.data?.detail || "Failed to save permissions.";
-      toast.error(msg);
+      toast.error(err.response?.data?.detail || "Failed to save permissions.");
     } finally {
       setSaving(false);
     }
   };
 
-  // ── Loading state ─────────────────────────────────────────────────────────────
+  // ── Loading ───────────────────────────────────────────────────────────────
 
   if (loading) {
     return (
@@ -187,10 +276,10 @@ function UserPermissions() {
     );
   }
 
-  // ── Render ────────────────────────────────────────────────────────────────────
+  // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="max-w-7xl mx-auto p-6">
+    <div className="max-w-5xl mx-auto p-6">
 
       {/* Header */}
       <div className="mb-6 flex items-center justify-between flex-wrap gap-4">
@@ -207,7 +296,6 @@ function UserPermissions() {
           >
             Cancel
           </button>
-          {/* Save is hidden for superusers — nothing to change */}
           {!isSuperuser && (
             <button
               onClick={handleSave}
@@ -233,7 +321,7 @@ function UserPermissions() {
         </div>
       )}
 
-      {/* Global Select All — hidden for superusers */}
+      {/* Global select all */}
       {!isSuperuser && (
         <div className="mb-4 flex justify-end">
           <button
@@ -245,98 +333,145 @@ function UserPermissions() {
         </div>
       )}
 
-      {/* Permissions table */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              {ACTIONS.map((action) => (
-                <th
-                  key={action}
-                  className="px-5 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide"
-                >
-                  {action}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {Object.entries(permissionsByModel).map(([model, actions], modelIndex) => {
-              const hasPerms = Object.values(actions).some((arr) => arr.length > 0);
-              if (!hasPerms) return null;
+      {/* Menu groups */}
+      <div className="space-y-3">
+        {MENU_GROUPS.map((group) => {
+          // Skip groups that have no permissions at all in the DB
+          const hasAny = group.models.some((m) =>
+            Object.values(permissionsByModel[m] || {}).some((arr) => arr.length > 0)
+          );
+          if (!hasAny) return null;
 
-              return (
-                <tr
-                  key={model}
-                  className={modelIndex > 0 ? "border-t-2 border-gray-100" : ""}
-                >
-                  {ACTIONS.map((action) => (
-                    <td key={action} className="px-5 py-4 align-top">
+          const isOpen = !collapsed[group.label];
+          const fullySelected = isGroupFullySelected(group, permissionsByModel);
+          const { selected, total } = countGroupSelected(group, permissionsByModel);
 
-                      {/* Model label + per-model toggle — first column only */}
-                      {action === "add" && (
-                        <div className="mb-2 flex items-center justify-between gap-2">
-                          <span className="text-xs font-semibold text-gray-700 capitalize bg-gray-100 px-2 py-0.5 rounded">
-                            {model.replace(/_/g, " ")}
-                          </span>
-                          {!isSuperuser && (
-                            <button
-                              onClick={() => toggleAllForModel(model)}
-                              className="text-[10px] text-indigo-600 hover:text-indigo-800 font-medium flex-shrink-0"
-                            >
-                              {isModelFullySelected(model) ? "clear" : "all"}
-                            </button>
-                          )}
-                        </div>
-                      )}
+          return (
+            <div
+              key={group.label}
+              className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm"
+            >
+              {/* Group header */}
+              <div
+                className="flex items-center justify-between px-4 py-3 bg-gray-50 cursor-pointer hover:bg-gray-100 transition select-none"
+                onClick={() => toggleCollapse(group.label)}
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-base">{group.icon}</span>
+                  <span className="text-sm font-semibold text-gray-800">
+                    {group.label}
+                  </span>
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 font-medium">
+                    {selected} / {total}
+                  </span>
+                </div>
+                <div className="flex items-center gap-4">
+                  {!isSuperuser && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleAllForGroup(group);
+                      }}
+                      className="text-xs text-indigo-600 hover:text-indigo-800 font-medium px-2 py-1 rounded hover:bg-indigo-50 transition"
+                    >
+                      {fullySelected ? "Clear all" : "Select all"}
+                    </button>
+                  )}
+                  {isOpen ? (
+                    <FaChevronDown className="text-gray-400 text-xs" />
+                  ) : (
+                    <FaChevronRight className="text-gray-400 text-xs" />
+                  )}
+                </div>
+              </div>
 
-                      {/* Checkboxes */}
-                      <div className="space-y-1.5">
-                        {actions[action].map((perm) => (
-                          <label
-                            key={perm.id}
-                            title={perm.codename}
-                            className={`flex items-center gap-2 group ${
-                              isSuperuser
-                                ? "cursor-not-allowed opacity-70"
-                                : "cursor-pointer"
-                            }`}
+              {/* Permission table */}
+              {isOpen && (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full">
+                    <thead>
+                      <tr className="border-b border-gray-100">
+                        <th className="px-4 py-2 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide w-36">
+                          Module
+                        </th>
+                        {ACTIONS.map((action) => (
+                          <th
+                            key={action}
+                            className="px-4 py-2 text-center text-xs font-semibold text-gray-500 uppercase tracking-wide"
                           >
-                            <input
-                              type="checkbox"
-                              // Superusers: always checked and locked
-                              checked={isSuperuser ? true : perm.assigned}
-                              disabled={isSuperuser}
-                              onChange={() =>
-                                togglePermission(model, action, perm.id)
-                              }
-                              className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 transition disabled:cursor-not-allowed"
-                            />
-                            <span className="text-sm text-gray-700 group-hover:text-gray-900 transition leading-tight">
-                              {perm.name}
-                            </span>
-                          </label>
+                            {ACTION_LABELS[action]}
+                          </th>
                         ))}
-                        {actions[action].length === 0 && (
-                          <span className="text-xs text-gray-400 italic">
-                            none
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                  ))}
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50">
+                      {group.models.map((model) => {
+                        const actions = permissionsByModel[model];
+                        if (!actions) return null;
+                        const hasPerms = Object.values(actions).some(
+                          (arr) => arr.length > 0
+                        );
+                        if (!hasPerms) return null;
+
+                        return (
+                          <tr key={model} className="hover:bg-gray-50 transition">
+                            {/* Model name */}
+                            <td className="px-4 py-3">
+                              <span className="text-xs font-medium text-gray-600 capitalize bg-gray-100 px-2 py-1 rounded">
+                                {model.replace(/_/g, " ")}
+                              </span>
+                            </td>
+
+                            {/* One cell per action */}
+                            {ACTIONS.map((action) => (
+                              <td
+                                key={action}
+                                className="px-4 py-3 text-center"
+                              >
+                                {actions[action]?.length > 0 ? (
+                                  actions[action].map((perm) => (
+                                    <label
+                                      key={perm.id}
+                                      className={`inline-flex items-center gap-2 ${
+                                        isSuperuser
+                                          ? "cursor-not-allowed opacity-70"
+                                          : "cursor-pointer"
+                                      }`}
+                                      title={perm.name}
+                                    >
+                                      <input
+                                        type="checkbox"
+                                        checked={isSuperuser ? true : perm.assigned}
+                                        disabled={isSuperuser}
+                                        onChange={() =>
+                                          togglePermission(model, action, perm.id)
+                                        }
+                                        className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 transition disabled:cursor-not-allowed"
+                                      />
+                                    </label>
+                                  ))
+                                ) : (
+                                  <span className="text-gray-300 text-xs">—</span>
+                                )}
+                              </td>
+                            ))}
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
 
-      {/* Footer hint */}
-      <p className="mt-4 text-xs text-gray-500 text-center">
+      {/* Footer */}
+      <p className="mt-5 text-xs text-gray-400 text-center">
         {isSuperuser
           ? "Superusers have all permissions by default — no changes can be made here."
-          : "Check to grant • Uncheck to revoke • Changes apply after saving"}
+          : "Check to grant · Uncheck to revoke · Changes apply after saving"}
       </p>
     </div>
   );
