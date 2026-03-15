@@ -5,7 +5,7 @@ from django.utils import timezone
 from django.db import transaction
 import random
 class Vendor(models.Model):
-    unique_code = models.CharField(max_length=8, unique=True, editable=False, db_index=True)
+    unique_code = models.CharField(max_length=12, unique=True, editable=False, db_index=True)
     name = models.CharField(max_length=200)
     phone = models.CharField(max_length=50, blank=True)
     email = models.EmailField(blank=True)
@@ -36,7 +36,7 @@ class Vendor(models.Model):
 
 
 class Department(models.Model):
-    unique_code = models.CharField(max_length=8, unique=True, editable=False, db_index=True)
+    unique_code = models.CharField(max_length=12, unique=True, editable=False, db_index=True)
     name = models.CharField(max_length=200)
     location = models.CharField(max_length=200, blank=True)
     responsible_person = models.CharField(max_length=200, blank=True)
@@ -65,7 +65,7 @@ class Department(models.Model):
         return self.name
     
 class Status(models.Model):
-    unique_code = models.CharField(max_length=8, unique=True, editable=False, db_index=True)
+    unique_code = models.CharField(max_length=12, unique=True, editable=False, db_index=True)
     name = models.CharField(max_length=50, unique=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -93,7 +93,7 @@ class Status(models.Model):
         return self.name
     
 class Category(models.Model):
-    unique_code = models.CharField(max_length=8, unique=True, editable=False, db_index=True)
+    unique_code = models.CharField(max_length=12, unique=True, editable=False, db_index=True)
     name = models.CharField(max_length=100, unique=True)
     slug = AutoSlugField(populate_from='name', unique=True)
     is_active = models.BooleanField(default=True)
@@ -122,7 +122,7 @@ class Category(models.Model):
 
 
 class Product(models.Model):
-    unique_code = models.CharField(max_length=8, unique=True, editable=False, db_index=True)
+    unique_code = models.CharField(max_length=12, unique=True, editable=False, db_index=True)
     name = models.CharField(max_length=200)
     category = models.ForeignKey(Category, on_delete=models.PROTECT)
     vendor = models.ForeignKey(Vendor, on_delete=models.PROTECT)
