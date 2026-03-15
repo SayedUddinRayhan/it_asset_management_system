@@ -74,7 +74,7 @@ export default function ChatBot() {
 
     try {
       const { data } = await axios.post(
-        "/api/chatbot/chat/",
+        `${import.meta.env.VITE_API_BASE_URL}/chatbot/`,
         { message: msg },
         {
           headers: {

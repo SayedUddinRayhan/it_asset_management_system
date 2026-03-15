@@ -3,7 +3,6 @@ from langchain_community.utilities import SQLDatabase
 from langchain_community.agent_toolkits import create_sql_agent
 from django.conf import settings
 
-# ── In-memory conversation history store (per user session) ──────────────────
 _history_store: dict[str, list] = {}
 
 def get_history(session_id: str) -> list:
@@ -14,59 +13,63 @@ def get_history(session_id: str) -> list:
 def clear_history(session_id: str):
     _history_store[session_id] = []
 
-# ── System prompt ─────────────────────────────────────────────────────────────
-SYSTEM_PREFIX = """You are an IT Asset Management assistant.
-Answer questions using the database. Be concise and clear.
-Use bullet points when listing multiple assets.
-Never modify data — only read it.
-If something is not in the database, say so."""
+SYSTEM_PREFIX = """You are an IT Asset Management assistant with access to a PostgreSQL database.
+Never modify data — only SELECT queries allowed.
+If something is not in the database, say so clearly.
+Use bullet points when listing multiple items.
 
-# ── Main agent runner ─────────────────────────────────────────────────────────
+You MUST follow this EXACT format every single time, no exceptions:
+
+Thought: [your reasoning about what to do]
+Action: [one of the available tool names]
+Action Input: [the input to the tool]
+Observation: [the result of the action]
+... (repeat Thought/Action/Action Input/Observation N times if needed)
+Thought: I now know the final answer
+Final Answer: [your concise answer to the user]
+
+IMPORTANT: Never write anything outside this format. Never skip to Final Answer without using a tool first.
+"""
+
 def run_agent(session_id: str, user_message: str) -> str:
     llm = ChatOllama(
-        model="llama3",
+        model="tinyllama",
         base_url="http://localhost:11434",
         temperature=0,
+        num_predict=1024,
+        repeat_penalty=1.1,
     )
 
     db = SQLDatabase.from_uri(
         settings.DATABASE_URL,
         include_tables=[
-            "api_asset",
+            "api_product",
             "api_category",
-            "api_location",
+            "api_department",
             "accounts_user",
         ],
-        sample_rows_in_table_info=2,
+        sample_rows_in_table_info=1, 
     )
 
-    # Build conversation context from history
     history = get_history(session_id)
-    history_text = ""
+    full_input = user_message
     if history:
         lines = []
-        for entry in history[-6:]:  # last 3 turns
+        for entry in history[-4:]:  
             lines.append(f"Human: {entry['human']}")
             lines.append(f"Assistant: {entry['ai']}")
         history_text = "\n".join(lines)
-
-    # Inject history into the prompt
-    full_input = user_message
-    if history_text:
-        full_input = f"""Previous conversation:
-{history_text}
-
-Current question: {user_message}"""
+        full_input = f"Previous conversation:\n{history_text}\n\nCurrent question: {user_message}"
 
     agent = create_sql_agent(
         llm=llm,
         db=db,
-        agent_type="openai-tools",
+        agent_type="zero-shot-react-description",
         prefix=SYSTEM_PREFIX,
         verbose=True,
-        handle_parsing_errors=True,
-        max_iterations=10,
-        max_execution_time=60,
+        handle_parsing_errors="Please follow the exact Thought/Action/Action Input format.",
+        max_iterations=15,
+        max_execution_time=120,
     )
 
     try:

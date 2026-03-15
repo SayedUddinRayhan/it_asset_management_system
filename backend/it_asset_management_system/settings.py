@@ -114,9 +114,13 @@ DATABASES = {
         'PORT': env('DB_PORT'),
     }
 }
-# Database URL for LangChain SQL Agent
-DATABASE_URL = f"postgresql://{env('DB_USER')}:{env('DB_PASSWORD')}@{env('DB_HOST')}:{env('DB_PORT')}/{env('DB_NAME')}"
 
+# Database URL for LangChain SQL Agent
+# For LangChain — must URL-encode the @ in the password as %40
+DATABASE_URL = (
+    f"postgresql://{env('DB_USER')}:{env('DB_PASSWORD').replace('@', '%40')}"
+    f"@{env('DB_HOST')}:{env('DB_PORT')}/{env('DB_NAME')}"
+)
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
